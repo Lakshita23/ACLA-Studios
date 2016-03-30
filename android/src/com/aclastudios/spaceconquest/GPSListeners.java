@@ -129,7 +129,7 @@ public class GPSListeners implements RoomStatusUpdateListener, RoomUpdateListene
 				.getCurrentPlayerId(mGoogleApiClient));
 		activity.MultiplayerSession.mName = room.getParticipant(
 				room.getParticipantId(Games.Players.getCurrentPlayerId(mGoogleApiClient))).getDisplayName();
-		activity.MultiplayerSession.mParticipantsId = room.getParticipantIds();
+
 		// print out the list of participants (for debug purposes)
 		Log.d(TAG, "Room ID: " + activity.MultiplayerSession.mRoomId);
 		Log.d(TAG, "<< CONNECTED TO ROOM>>");

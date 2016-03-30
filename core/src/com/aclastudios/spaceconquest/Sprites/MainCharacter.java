@@ -35,8 +35,6 @@ public class MainCharacter extends Sprite {
     private int charScore;
     private Array<FireBall> fireballs;
     private float scale = (float) (1.0/20);
-    private float x_value;
-    private float y_value;
 
     public MainCharacter(World world,PlayScreen screen){
         super(screen.getAtlas().findRegion("little_mario"));
@@ -87,9 +85,7 @@ public class MainCharacter extends Sprite {
 //        fixture = b2body.createFixture(fdef);
     }
     public void update(float dt){
-        x_value=b2body.getPosition().x - getWidth() / 2;
-        y_value=b2body.getPosition().y - getHeight() / 2;
-        setPosition(x_value, y_value);
+        setPosition(b2body.getPosition().x - getWidth() / 2, b2body.getPosition().y - getHeight() / 2);
         //System.out.println("My weight is " + charWeight);
         for(FireBall  ball : fireballs) {
             ball.update(dt);
@@ -182,11 +178,5 @@ public class MainCharacter extends Sprite {
     public float getCharacterScale() {
 
         return ((float)1+ (charWeight*scale));
-    }
-    public float getX_value(){
-        return x_value;
-    }
-    public float getY_value(){
-        return y_value;
     }
 }

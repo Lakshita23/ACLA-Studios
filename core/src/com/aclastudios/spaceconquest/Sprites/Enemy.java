@@ -25,7 +25,7 @@ import com.badlogic.gdx.utils.Array;
 public class Enemy extends Sprite{
     //private float xSpeed,ySpeed;
     public final String[] area = {"Team1Spawn","Team2Spawn"};
-    private float x, y;
+    private int x, y;
     private float angle;
     private int enemyID;
     public World world;
@@ -120,7 +120,7 @@ public class Enemy extends Sprite{
                 defineCharacter();
             }
         }else {
-            b2body.setTransform(this.x, this.y,angle);
+            b2body.setTransform(0,0,0);
             setPosition(b2body.getPosition().x - getWidth() / 2, b2body.getPosition().y - getHeight() / 2);
             //System.out.println("My weight is " + charWeight);
         }
@@ -138,7 +138,7 @@ public class Enemy extends Sprite{
     public boolean isDestroyed() {
         return destroyed;
     }
-    public void updateEnemy(float x,float y, float angle){
+    public void updateEnemy(int x,int y, float angle){
         this.x=x;
         this.y=y;
         this.angle = angle;

@@ -1,7 +1,8 @@
 package com.aclastudios.spaceconquest.PlayGameService;
 
-import com.aclastudios.spaceconquest.Screens.PlayScreen;
+import com.badlogic.gdx.Game;
 
+import java.io.BufferedReader;
 
 public interface PlayServices {
     public boolean getSignedInGPGS();
@@ -30,7 +31,6 @@ public interface PlayServices {
 
     public void BroadcastUnreliableMessage(String message);
 
-    public void setScreen(PlayScreen screen);
-
+    public BufferedReader inputBuffer();
 
 }

@@ -364,9 +364,9 @@ public class PlayScreen implements Screen {
     public void render(float delta) {
         try {
             if (hud.isTimeUp() == true) {
+                game.playServices.submitScoreGPGS(hud.getkills());
                 game.playServices.leaveRoom();
                 game.multiplayerSessionInfo.mState = game.multiplayerSessionInfo.ROOM_NULL;
-                game.playServices.submitScoreGPGS(hud.getkills());
                 gsm.set(new GameOver(game, gsm));
                 dispose();
             }
@@ -445,9 +445,7 @@ public class PlayScreen implements Screen {
             stage.draw();
 
 
-            if (hud.isTimeUp() == true) {
-                gsm.set(new GameOver(game, gsm));
-            }
+
             if (userID==0){
                 game.playServices.BroadcastUnreliableMessage("Time:" + hud.getTime());
             } else {

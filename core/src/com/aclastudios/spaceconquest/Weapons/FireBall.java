@@ -28,15 +28,17 @@ public class FireBall extends Sprite {
     boolean enemyFire;
     float xSpd;
     float ySpd;
+    float distance;
     Body b2body;
-    int id;
-    public FireBall(PlayScreen screen, float x, float y, float xSpd,float ySpd, boolean enemyFire, int id){
+    int firerID;
+    public FireBall(PlayScreen screen, float x, float y, float xSpd,float ySpd,float radius, boolean enemyFire, int firerID){
         this.xSpd = xSpd;
         this.ySpd = ySpd;
         this.screen = screen;
         this.world = screen.getWorld();
         this.enemyFire = enemyFire;
-        this.id=id;
+        this.firerID = firerID;
+        this.distance = radius;
         frames = new Array<TextureRegion>();
         fb=new TextureAtlas("Mario_and_Enemies.pack").findRegion("fireball");
         for(int i = 0; i < 4; i++){
@@ -44,13 +46,13 @@ public class FireBall extends Sprite {
         }
         fireAnimation = new Animation(0.2f, frames);
         setRegion(fireAnimation.getKeyFrame(0));
-        setBounds(x, y, 6, 6);
+        setBounds(x, y, 6/ SpaceConquest.PPM, 6/ SpaceConquest.PPM);
         defineFireBall();
     }
 
     public void defineFireBall(){
         BodyDef bdef = new BodyDef();
-        bdef.position.set(getX() + (this.xSpd), getY() + (this.ySpd));
+        bdef.position.set(getX() + (this.xSpd *(distance))/ SpaceConquest.PPM, getY() + (this.ySpd*distance)/ SpaceConquest.PPM);
         bdef.type = BodyDef.BodyType.DynamicBody;
         bdef.bullet = true;
         //if(!world.isLocked())
@@ -58,7 +60,7 @@ public class FireBall extends Sprite {
 
         FixtureDef fdef = new FixtureDef();
         CircleShape shape = new CircleShape();
-        shape.setRadius(3 );
+        shape.setRadius(3/ SpaceConquest.PPM);
         if(enemyFire){
             fdef.filter.categoryBits = SpaceConquest.FIREBALL_BIT;
             fdef.filter.maskBits = SpaceConquest.OBSTACLE_BIT
@@ -69,17 +71,11 @@ public class FireBall extends Sprite {
             fdef.filter.maskBits = SpaceConquest.OBSTACLE_BIT
                     |SpaceConquest.CHARACTER_BIT;
         }
-//        short characterBit = (this.enemyFire)?SpaceConquest.MAIN_CHARACTER_BIT:SpaceConquest.CHARACTER_BIT;
-//        fdef.filter.categoryBits = SpaceConquest.FIREBALL_BIT;
-//        fdef.filter.maskBits = (short) (SpaceConquest.OBSTACLE_BIT |characterBit);
 
         fdef.shape = shape;
         fdef.restitution = 1;
-        //fdef.friction = 0;
         b2body.createFixture(fdef).setUserData(this);
         b2body.setLinearVelocity(new Vector2((this.xSpd * 1000), (this.ySpd * 1000)));
-//        System.out.println(b2body.getLinearVelocity().x + "y speed is "+b2body.getLinearVelocity().y);
-        //b2body.setLinearVelocity(new Vector2(fireRight ? 2 : -200, 200));
     }
 
     public void update(float dt){
@@ -105,7 +101,9 @@ public class FireBall extends Sprite {
         return destroyed;
     }
 
-    public int getid() {
-        return id;
+
+    public int getFirerID() {
+        return firerID;
     }
+
 }

@@ -1,6 +1,7 @@
 package com.aclastudios.spaceconquest.Sprites.Resource;
 
 import com.aclastudios.spaceconquest.Screens.PlayScreen;
+import com.aclastudios.spaceconquest.SpaceConquest;
 import com.aclastudios.spaceconquest.Sprites.MainCharacter;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.Sprite;
@@ -22,7 +23,7 @@ public abstract class Resources extends Sprite {
         this.screen = screen;
         setPosition(x,y);
         resource = new TextureRegion(getTexture(),0,0,16,16);
-        setBounds(getX(),getY(),16,16);
+        setBounds(getX(),getY(),16/ SpaceConquest.PPM,16/ SpaceConquest.PPM);
         defineResources(x,y);
         toDestroy=false;
         destroyed=false;

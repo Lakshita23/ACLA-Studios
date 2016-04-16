@@ -14,9 +14,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
-/**
- * Created by Lakshita on 3/2/2016.
- */
+
 public class GameOver implements Screen {
     private Viewport viewport;
     private Stage stage;
@@ -31,14 +29,15 @@ public class GameOver implements Screen {
 
         Label.LabelStyle font = new Label.LabelStyle(new BitmapFont(), Color.WHITE);
 
+        //Table1
+        
+
+
+        //Table2
         Table table = new Table();
-        table.center();
+        table.bottom();
         table.setFillParent(true);
-
-        Label gameOverLabel = new Label("GAME OVER", font);
         Label playAgainLabel = new Label("Click to Play Again", font);
-
-        table.add(gameOverLabel).expandX();
         table.row();
         table.add(playAgainLabel).expandX().padTop(10f);
 

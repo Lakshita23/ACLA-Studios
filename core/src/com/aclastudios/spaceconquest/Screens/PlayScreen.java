@@ -45,8 +45,6 @@ import com.badlogic.gdx.utils.Array;
 import java.util.Arrays;
 import java.util.HashMap;
 
-import sun.rmi.runtime.Log;
-
 /*
 **********************************declare number of players, first 3 players are team 1,
  */
@@ -58,14 +56,14 @@ public class PlayScreen implements Screen {
 
     private SpaceConquest game;
     private TextureAtlas atlas;
-    Texture texture;
+    Texture mapTexture;
     private OrthographicCamera gamecam;
     private Viewport gamePort;
     private Hud hud;
 
     private float rateOfFire = (float) 0.3;
     private float coolDown;
-    private Array<FireBall> networkFireballs;
+//    private Array<FireBall> networkFireballs;
 
     private float x;
     private float y;
@@ -122,12 +120,12 @@ public class PlayScreen implements Screen {
         numOfPlayers =  game.multiplayerSessionInfo.mParticipants.size();
         game.multiplayerSessionInfo.mId_num=this.userID;
         //Background and Character assets
-        texture = new Texture("map.png");
+        mapTexture = new Texture("map.png");
         //Game map and Game View
         //camera of the map
         gamecam  = new OrthographicCamera();
         //create a FitViewport to maintain virtual aspect ratio
-        gamePort = new FitViewport(SpaceConquest.V_WIDTH,SpaceConquest.V_HEIGHT,gamecam);
+        gamePort = new FitViewport(SpaceConquest.V_WIDTH/SpaceConquest.PPM,SpaceConquest.V_HEIGHT/SpaceConquest.PPM,gamecam);
 
         //create our game HUD for scores/timers/level info
         hud = new Hud(game.batch,this);
@@ -135,7 +133,7 @@ public class PlayScreen implements Screen {
         //Load our map and setup our map renderer
         maploader = new TmxMapLoader();
         map = maploader.load("map-orthogonal.tmx");
-        renderer = new OrthogonalTiledMapRenderer(map);
+        renderer = new OrthogonalTiledMapRenderer(map,1/ SpaceConquest.PPM);
         gamecam.position.set(gamePort.getWorldWidth() / 2, gamePort.getWorldHeight() / 2, 0);
 
         //Creating the box 2d world
@@ -159,7 +157,7 @@ public class PlayScreen implements Screen {
 
 
         //Initialize FireBalls Array
-        networkFireballs = new Array<FireBall>();
+//        networkFireballs = new Array<FireBall>();
         coolDown = 0;
 
         //Initialize Spawn Area
@@ -167,10 +165,10 @@ public class PlayScreen implements Screen {
             if (layer.getName().matches("resourceSpawningArea")) {
                 Array<RectangleMapObject> mo = layer.getObjects().getByType(RectangleMapObject.class);
                 Rectangle rect = mo.get(0).getRectangle();
-                this.x = rect.getX();
-                this.y = rect.getY();
-                this.width = rect.getWidth();
-                this.height = rect.getHeight();
+                this.x = rect.getX()/ SpaceConquest.PPM;
+                this.y = rect.getY()/ SpaceConquest.PPM;
+                this.width = rect.getWidth()/ SpaceConquest.PPM;
+                this.height = rect.getHeight()/ SpaceConquest.PPM;
             }
         }
         //set world listener
@@ -194,9 +192,10 @@ public class PlayScreen implements Screen {
         touchpadStyle.background = touchBackground;
         touchpadStyle.knob = touchKnob;
         //Create new TouchPad with the created style
-        touchpad = new Touchpad(10, touchpadStyle);
+        touchpad = new Touchpad(10/ SpaceConquest.PPM, touchpadStyle);
         //setBounds(x,y,width,height)
-        touchpad.setBounds(15, 15, 70, 70);
+        touchpad.setBounds((float)7.5, (float)7.5, 35, 35);
+        //touchpad.setScale(1 / SpaceConquest.PPM);
 
         buttonsAtlas = new TextureAtlas("button/button.pack");
         buttonSkin = new Skin(buttonsAtlas);
@@ -208,9 +207,9 @@ public class PlayScreen implements Screen {
         health = new Texture(Gdx.files.internal("healthbar.png"));
 
         button = new ImageButton(new TextureRegionDrawable(new TextureRegion(red)), new TextureRegionDrawable(new TextureRegion(orange)));
-        button.setBounds(0,0,40,40);
+        button.setBounds(0,0,40/ SpaceConquest.PPM,40/ SpaceConquest.PPM);
         jetpack_Button = new ImageButton(new TextureRegionDrawable(new TextureRegion(orange)), new TextureRegionDrawable(new TextureRegion(red)));
-        jetpack_Button.setBounds(0,0,40,40);
+        jetpack_Button.setBounds(0,0,40/ SpaceConquest.PPM,40/ SpaceConquest.PPM);
         //table.add(button);
 
         //Create a Stage and add TouchPad
@@ -242,32 +241,32 @@ public class PlayScreen implements Screen {
         coolDown +=dt;
         if (button.isPressed() && coolDown >rateOfFire && mainCharacter.getAmmunition()>0) {
             coolDown = 0;
-            game.playServices.BroadcastMessage("fire:" + userID + ":" + mainCharacter.b2body.getPosition().x + ":"
-                    + mainCharacter.b2body.getPosition().y + ":" + (mainCharacter.getLastXPercent() * (mainCharacter.getRadius() + 1)) + ":" +
-                    (mainCharacter.getLastYPercent() * (mainCharacter.getRadius() + 1)));
             //start of fire ball
+            System.out.println("I am firing");
+//            game.playServices.BroadcastMessage("fire:" + userID + ":" + mainCharacter.b2body.getPosition().x + ":"
+//                    + mainCharacter.b2body.getPosition().y + ":" + (mainCharacter.getLastXPercent()*(mainCharacter.getRadius()+1)) + ":" +
+//                    (mainCharacter.getLastYPercent()*(mainCharacter.getRadius()+1)));
             //end of fireball
 
-            mainCharacter.b2body.applyLinearImpulse(new Vector2((float) (mainCharacter.b2body.getLinearVelocity().x * -0.5),
-                    (float) (mainCharacter.b2body.getLinearVelocity().y * -0.5)), mainCharacter.b2body.getWorldCenter(), true);
+            mainCharacter.b2body.applyLinearImpulse(new Vector2((float) (mainCharacter.b2body.getLinearVelocity().x *-1),
+                    (float) (mainCharacter.b2body.getLinearVelocity().y * -1)), mainCharacter.b2body.getWorldCenter(), true);
             mainCharacter.fire();
-
         }
         else {
-            double speedreduction = Math.pow(0.9, mainCharacter.getCharWeight()*0.6);
+            double speedreduction = Math.pow(0.9, mainCharacter.getCharWeight()*0.4);
             if(jetpack_Button.isPressed() && mainCharacter.getJetpack_time()>0.05){
                 mainCharacter.exhaustJetPack(dt);
-                speedreduction = 2;
+                speedreduction = 3;
             }
             else {
                 //friction
-                mainCharacter.b2body.applyLinearImpulse(new Vector2((float) (mainCharacter.b2body.getLinearVelocity().x * -0.01),
-                        (float) (mainCharacter.b2body.getLinearVelocity().y * -0.01)), mainCharacter.b2body.getWorldCenter(), true);
+                mainCharacter.b2body.applyLinearImpulse(new Vector2((float) (mainCharacter.b2body.getLinearVelocity().x * -0.03),
+                        (float) (mainCharacter.b2body.getLinearVelocity().y * -0.03)), mainCharacter.b2body.getWorldCenter(), true);
             }
-            mainCharacter.setxSpeedPercent((float) (touchpad.getKnobPercentX() * 1.5 * speedreduction));
-            mainCharacter.setySpeedPercent((float) (touchpad.getKnobPercentY() * 1.5 * speedreduction));
-//            System.out.println("speed: " + mainCharacter.getxSpeedPercent() + " " + mainCharacter.getySpeedPercent());
-            mainCharacter.b2body.applyLinearImpulse(new Vector2(mainCharacter.getxSpeedPercent(), mainCharacter.getySpeedPercent()), mainCharacter.b2body.getWorldCenter(), true);
+            mainCharacter.setxSpeedPercent((float) (touchpad.getKnobPercentX()));
+            mainCharacter.setySpeedPercent((float) (touchpad.getKnobPercentY()));
+            mainCharacter.b2body.applyLinearImpulse(new Vector2((float)(mainCharacter.getxSpeedPercent() *2* speedreduction),
+                    (float)(mainCharacter.getySpeedPercent() * 2 * speedreduction)), mainCharacter.b2body.getWorldCenter(), true);
         }
 
     }
@@ -287,7 +286,7 @@ public class PlayScreen implements Screen {
 
         float[] gadget = mainCharacter.getGadgetInfo();
         //hud timer
-        hud.update(dt, (int)gadget[0],gadget[1]);
+        hud.update(dt, (int) gadget[0], gadget[1]);
         //stopping the character
         slowDownCharacter();
         //sprites
@@ -302,29 +301,35 @@ public class PlayScreen implements Screen {
                         sideCharacter.updateEnemy(Float.parseFloat(values[1]),
                                 Float.parseFloat(values[2]),
                                 Float.parseFloat(values[3]),
-                                Float.parseFloat(values[5]),0,0);
+                                Float.parseFloat(values[5]),
+                                Float.parseFloat(values[7]),
+                                Float.parseFloat(values[8]),
+                                Integer.parseInt(values[9]));
 //                  sideCharacter.setRotation(Float.parseFloat(values[3]));
                         if (values[4].equals("false")) {
                             sideCharacter.dead();
                         }
                     }
                     sideCharacter.b2body.setLinearVelocity(Float.parseFloat(values[7]),Float.parseFloat(values[8]));
-                }catch (Exception e){}
+                }catch (Exception e){
+                    System.out.println("error while updating character coordinate");
+                    e.printStackTrace();
+                }
             }
             sideCharacter.update(dt);
         }
 
         //check if fireballs is destroyed or not
 //        synchronized (networkFireballs) {
-            try {
-                for (FireBall ball : networkFireballs) {
-                    ball.update(dt);
-                    if (ball.isDestroyed())
-                        networkFireballs.removeValue(ball, true);
-                }
-            }catch (Exception e){
-                System.out.println("error here");
-            }
+//            try {
+//                for (FireBall ball : networkFireballs) {
+//                    ball.update(dt);
+//                    if (ball.isDestroyed())
+//                        networkFireballs.removeValue(ball, true);
+//                }
+//            }catch (Exception e){
+//                System.out.println("error here");
+//            }
 //        }
         
         resourceManager.updateIron(dt);
@@ -345,18 +350,28 @@ public class PlayScreen implements Screen {
 
         //SendMessage
         try {
-            game.playServices.BroadcastUnreliableMessage(userID + ":" + x + ":" + y + ":" + mainCharacter.getAngle() + ":"+
-                    String.valueOf(!mainCharacter.isDestroyed())+":" +mainCharacter.getCharWeight()+":"+mainCharacter.getHP()+
-                   ":"+mainCharacter.b2body.getLinearVelocity().x + ":"+mainCharacter.b2body.getLinearVelocity().y);
-        }catch (Exception e){}
+            System.out.println("sending character's coordinate");
+            game.playServices.BroadcastUnreliableMessage(userID + ":" + x + ":" + y + ":" + mainCharacter.getAngle() + ":" +
+                    String.valueOf(!mainCharacter.isDestroyed()) + ":" + mainCharacter.getCharWeight() + ":" + mainCharacter.getHP() +
+                    ":" + mainCharacter.getLastXPercent() + ":" + mainCharacter.getLastYPercent() + ":" +
+                    mainCharacter.getFireCount());
+            System.out.println("finished sending character's coordinate");
+
+        }catch (Exception e){
+            System.out.println("error while sending message");
+            e.printStackTrace();
+        }
 
         //gamecam updates
         gamecam.update();
         renderer.setView(gamecam); //render only what the gamecam can see
 
-        button.setPosition(gamecam.position.x + gamePort.getWorldWidth() / 4 + 40, gamecam.position.y - gamePort.getWorldHeight() / 2 + 10);
-        jetpack_Button.setPosition(gamecam.position.x+gamePort.getWorldWidth() / 4 ,gamecam.position.y-gamePort.getWorldHeight()/2+10);
-        touchpad.setPosition(gamecam.position.x-gamePort.getWorldWidth() / 2+10,gamecam.position.y-gamePort.getWorldHeight()/2+10);
+        button.setPosition(gamecam.position.x + gamePort.getWorldWidth() / 4 + 40 / SpaceConquest.PPM, gamecam.position.y - gamePort.getWorldHeight() / 2 + 10 / SpaceConquest.PPM);
+        jetpack_Button.setPosition(gamecam.position.x+gamePort.getWorldWidth() / 4 ,gamecam.position.y-gamePort.getWorldHeight()/2+10/ SpaceConquest.PPM);
+        touchpad.setPosition((gamecam.position.x-(gamePort.getWorldWidth() / 2)),
+                (gamecam.position.y-gamePort.getWorldHeight()/2));
+//        touchpad.setPosition((gamecam.position.x-(gamePort.getWorldWidth() / 2))+(10/ SpaceConquest.PPM),
+//                (gamecam.position.y-gamePort.getWorldHeight()/2)+(10/ SpaceConquest.PPM));
 
     }
     //render
@@ -384,7 +399,8 @@ public class PlayScreen implements Screen {
             renderer.render();
             game.batch.setProjectionMatrix(gamecam.combined);
             game.batch.begin(); //opens the "box"
-            game.batch.draw(texture, 0, 0, texture.getWidth() * SpaceConquest.MAP_SCALE, texture.getHeight() * SpaceConquest.MAP_SCALE);
+            game.batch.draw(mapTexture, 0, 0, (mapTexture.getWidth() * SpaceConquest.MAP_SCALE)/ SpaceConquest.PPM,
+                    (mapTexture.getHeight() * SpaceConquest.MAP_SCALE)/ SpaceConquest.PPM);
 
             mainCharacter.draw(game.batch);
 
@@ -404,7 +420,10 @@ public class PlayScreen implements Screen {
                             }
                         }
                     }
-                }catch (Exception e){}
+                }catch (Exception e){
+                    e.printStackTrace();
+                    System.out.println("error updating enemies coordinate");
+                }
             }
             for (int i = 0; i < resourceManager.getIron_count(); i++)
                 resourceManager.getIron_array(i).draw(game.batch);
@@ -416,14 +435,8 @@ public class PlayScreen implements Screen {
             mainCharacter.draw(game.batch);
 
             //render the fireballs over the network
-            for (FireBall ball : networkFireballs)
-                try {
-                    if (ball!=null) {
-                        ball.draw(game.batch);
-                    }
-                } catch (Exception e){
-                    System.out.println("*********************************: "+e.getMessage());
-                }
+//            for (FireBall ball : networkFireballs)
+//                ball.draw(game.batch);
 
             //maincharacter healthbay
             HealthBar healthBar = new HealthBar(new TextureRegion(health),mainCharacter);
@@ -447,13 +460,15 @@ public class PlayScreen implements Screen {
 
 
             if (userID==0){
+                System.out.println("updating time");
                 game.playServices.BroadcastUnreliableMessage("Time:" + hud.getTime());
             } else {
                 hud.setTime(time);
             }
 
         }catch (Exception e){
-            //e.printStackTrace();
+            System.out.println("error in render");
+            e.printStackTrace();
         }
     }
 
@@ -517,56 +532,83 @@ public class PlayScreen implements Screen {
     }
 
     public void MessageListener(byte[] bytes){
+
         try {
             String message = new String (Arrays.copyOfRange(bytes, 0, bytes.length),"UTF-8");
-            String[] data = message.split(":");
+            final String[] data = message.split(":");
+            Gdx.app.postRunnable(new Runnable() {
+                @Override
+                public void run() {
+                    // Your crashing code here
 
-            if (data[0].equals("0") || data[0].equals("1") || data[0].equals("2")|| data[0].equals("3")|| data[0].equals("4")|| data[0].equals("5")) {
-                String[] position = data.clone();
-                positionvalues.put(Integer.parseInt(data[0]), position);
-            }
-            else if (data[0].equals("Serverpoints") && userID==0){
-                addscore(data[1], Integer.parseInt(data[2]));
-                System.out.println(data[0]+":"+data[1]+":"+data[2]);
-            }
-            else if (data[0].equals("UpdateScoreAll")){
-                Hud.updatescore(Integer.parseInt(data[1]), Integer.parseInt(data[2]));
-            }
-            else if (data[0].equals("fire")){
-                FireBall f = new FireBall(this, Float.parseFloat(data[2]),
-                        Float.parseFloat(data[3]), Float.parseFloat(data[4]), Float.parseFloat(data[5]),true,Integer.parseInt(data[1]));
-                networkFireballs.add(f);
-            }
-            else if (data[0].equals("Time")){
-                this.time = Integer.parseInt(data[1]);
-            }
-            else if (data[0].equals("Resources")){
-                System.out.println("Data 1:"+data[1]);
-                resourceManager.getResourceString(data[1]);
-                resourceManager.generateResources();
-            }
-            else if (data[0].equals("Delete")){
-                if (data[1].equals("Iron"))
-                    resourceManager.delIron(Integer.parseInt(data[2]), Float.parseFloat(data[3]));
-                else if (data[1].equals("GunPowder"))
-                    resourceManager.delGunPowder(Integer.parseInt(data[2]), Float.parseFloat(data[3]));
-                else if (data[1].equals("Oil"))
-                    resourceManager.delOil(Integer.parseInt(data[2]), Float.parseFloat(data[3]));
-            }
-            else if (data[0].equals("Generate")) {
-                if (data[1].equals("Iron"))
-                    resourceManager.addIron(Float.parseFloat(data[2]), Float.parseFloat(data[3]));
-                else if (data[1].equals("GunPowder"))
-                    resourceManager.addGunPowder(Float.parseFloat(data[2]), Float.parseFloat(data[3]));
-                else if (data[1].equals("Oil"))
-                    resourceManager.addOil(Float.parseFloat(data[2]), Float.parseFloat(data[3]));
-            }
-            else if (data[0].equals("KillBonus")){
-                hud.addkill();
-            }
+                if (data[0].equals("0") || data[0].equals("1") || data[0].equals("2")|| data[0].equals("3")|| data[0].equals("4")|| data[0].equals("5")) {
+                    System.out.println("received enemies's coordinate");
+                    String[] position = data.clone();
+                    positionvalues.put(Integer.parseInt(data[0]), position);
+                    System.out.println("finished updating ");
+                }
+                else if (data[0].equals("Serverpoints") && userID==0){
+                    System.out.println("received points update from other players");
+                    addscore(data[1], Integer.parseInt(data[2]));
+                    System.out.println(data[0]+":"+data[1]+":"+data[2]);
+                }
+                else if (data[0].equals("UpdateScoreAll")){
+                    System.out.println("received point update from server");
+                    Hud.updatescore(Integer.parseInt(data[1]), Integer.parseInt(data[2]));
+                }
+//                else if (data[0].equals("fire")){
+//                    FireBall f = new FireBall(this, Float.parseFloat(data[2]),
+//                            Float.parseFloat(data[3]), Float.parseFloat(data[4]), Float.parseFloat(data[5]),true);
+//                    networkFireballs.add(f);
+//                }
+                else if (data[0].equals("Time")){
+                    System.out.println("received time update");
+                    time = Integer.parseInt(data[1]);
+                }
+                else if (data[0].equals("Resources")){
+                    System.out.println("Data 1:"+data[1]);
+                    resourceManager.getResourceString(data[1]);
+                    resourceManager.generateResources();
+                }
+                else if (data[0].equals("Delete")){
+                    System.out.println("delete resource"+data[2]+" "+data[3]);
+                    if (data[1].equals("Iron"))
+                        resourceManager.delIron(Integer.parseInt(data[2]), Float.parseFloat(data[3]));
+                    else if (data[1].equals("GunPowder"))
+                        resourceManager.delGunPowder(Integer.parseInt(data[2]), Float.parseFloat(data[3]));
+                    else if (data[1].equals("Oil"))
+                        resourceManager.delOil(Integer.parseInt(data[2]), Float.parseFloat(data[3]));
+                }
+                else if (data[0].equals("Generate")) {
+                    System.out.println("generate resources" + data[1] +" "+data[2] + " "+data[3]);
+                    try {
+                        if (data[1].equals("Iron")) {
+                            System.out.println("generate iron");
+                            resourceManager.addIron(Float.parseFloat(data[2]), Float.parseFloat(data[3]));
+                        }
+                        else if (data[1].equals("GunPowder")) {
+                            System.out.println("generate gunpowder");
+                            resourceManager.addGunPowder(Float.parseFloat(data[2]), Float.parseFloat(data[3]));
+                        }
+                        else if (data[1].equals("Oil")) {
+                            System.out.println("generate oil");
+                            resourceManager.addOil(Float.parseFloat(data[2]), Float.parseFloat(data[3]));
+                        }
+                    }
+                    catch (Exception e){
+                        System.out.println("resource crash");
+                        e.printStackTrace();
+                    }
+                }
+                else if (data[0].equals("KillBonus")){
+                    hud.addkill();
+                }
+                    }
+            });
 
         } catch (Exception e) {
-            //e.printStackTrace();
+            e.printStackTrace();
+            System.out.println("error in receiving message");
         }
     }
     public void addscore(String id,int data){
@@ -586,5 +628,8 @@ public class PlayScreen implements Screen {
         return userID;
     }
 
+    public float getRateOfFire() {
+        return rateOfFire;
+    }
 }
 

@@ -15,7 +15,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 public class SpaceConquest extends Game {
 	public static final int V_WIDTH = 400; //Virtual screen width of the game
 	public static final int V_HEIGHT =208; //Virtual screen height of the game
-	public static final float PPM = 10;
+	public static final float PPM = 2;
 	public static final float MAP_SCALE = (float) 0.7;
 	public SpriteBatch batch;
 

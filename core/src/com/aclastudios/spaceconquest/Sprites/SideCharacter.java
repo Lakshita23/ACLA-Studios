@@ -2,7 +2,7 @@ package com.aclastudios.spaceconquest.Sprites;
 
 import com.aclastudios.spaceconquest.Screens.PlayScreen;
 import com.aclastudios.spaceconquest.SpaceConquest;
-import com.badlogic.gdx.Gdx;
+import com.aclastudios.spaceconquest.Weapons.FireBall;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.Sprite;
@@ -28,6 +28,12 @@ public class SideCharacter extends Sprite{
     private float x, y;
     private float angle;
     private int enemyID;
+    private int actualFireCount;
+    private int fireCount;
+    private float rateOfFire;
+    private float cooldown;
+    private Array<FireBall> fireballs;
+
     public World world;
     private PlayScreen screen;
     TiledMap map;
@@ -46,7 +52,7 @@ public class SideCharacter extends Sprite{
     private Animation running;
     private float stateTimer;
     private float weight;
-    private float radius = 13;
+    private float radius = 13/ SpaceConquest.PPM;
     private float scale = (float) (1.0/10);
 
     //private int charWeight;
@@ -64,13 +70,20 @@ public class SideCharacter extends Sprite{
         running =new Animation(0.2f, frames);
         defineCharacter();
         character = new TextureRegion(getTexture(), getRegionX() + 200, getRegionY(), 200, 200);
-        setBounds(0, 0, 25, 25);
+        setBounds(0, 0, 25/ SpaceConquest.PPM, 25/ SpaceConquest.PPM);
         setRegion(character);
+        fireballs = new Array<FireBall>();
+
+        rateOfFire = screen.getRateOfFire();
+        fireCount = 0;
+        actualFireCount = 0;
+        cooldown =0;
+
         stateTime = 0;
         setToDestroy = false;
         destroyed = false;
         deathCount = 0;
-        lastXPercent=0;
+        lastXPercent=1;
         lastYPercent=0;
         xSpeedPercent=0;
         ySpeedPercent=0;
@@ -90,7 +103,7 @@ public class SideCharacter extends Sprite{
                 Rectangle rect = mo.get(enemyID%(screen.getNumOfPlayers()/2)).getRectangle();
                 spawnX = rect.getX()*SpaceConquest.MAP_SCALE;
                 spawnY = rect.getY()*SpaceConquest.MAP_SCALE;
-                bdef.position.set(spawnX, spawnY); //temp set position
+                bdef.position.set(spawnX/ SpaceConquest.PPM, spawnY/ SpaceConquest.PPM); //temp set position
 
             }
         }
@@ -121,10 +134,13 @@ public class SideCharacter extends Sprite{
     public void draw(Batch batch) {
         if(!this.isDestroyed())
              super.draw(batch);
+        for(FireBall ball : fireballs)
+            ball.draw(batch);
     }
 
     public void update(float dt) {
         stateTime += dt;
+        cooldown += dt;
         if (setToDestroy ) {
             System.out.println("destroying");
             world.destroyBody(b2body);
@@ -145,6 +161,15 @@ public class SideCharacter extends Sprite{
             setPosition(b2body.getPosition().x - getWidth() / 2, b2body.getPosition().y - getHeight() / 2);
             //System.out.println("My weight is " + charWeight);
             setRegion(getFrame(dt));
+        }
+        if((cooldown>rateOfFire)&&(fireCount<actualFireCount)){
+            fire();
+            cooldown=0;
+        }
+        for(FireBall  ball : fireballs) {
+            ball.update(dt);
+            if(ball.isDestroyed())
+                fireballs.removeValue(ball, true);
         }
     }
     public float getCharacterScale() {
@@ -191,11 +216,12 @@ public class SideCharacter extends Sprite{
     public boolean isDestroyed() {
         return destroyed;
     }
-    public void updateEnemy(float x,float y, float angle,float weight,float xPercent,float yPercent){
+    public void updateEnemy(float x,float y, float angle,float weight,float xPercent,float yPercent,int actualFireCount){
         this.x=x;
         this.y=y;
         this.angle = angle;
         this.weight = weight;
+        this.actualFireCount = actualFireCount;
         xSpeedPercent = xPercent;
         ySpeedPercent = yPercent;
         if(xPercent!=0||yPercent!=0){
@@ -204,9 +230,19 @@ public class SideCharacter extends Sprite{
         }
         Array<Fixture> fix = b2body.getFixtureList();
         Shape shape = fix.get(0).getShape();
-        shape.setRadius(radius + (this.weight * scale * 7));
+        radius = (13 +(this.weight * scale * 7))/ SpaceConquest.PPM;
+        shape.setRadius(radius);
 //        System.out.println(shape.getRadius());
         setRotation(angle);
+    }
+    public float[] fire(){
+        System.out.println("user "+enemyID+" is firing");
+        fireCount+=1;
+        float[] s = {b2body.getPosition().x,b2body.getPosition().y};
+        FireBall f = new FireBall(screen, s[0], s[1], lastXPercent, lastYPercent,radius,true,enemyID);
+        fireballs.add(f);
+//        System.out.println("ammunition left: "+ ammunition);
+        return s;
     }
     /*
     public float getySpeedPercent() {

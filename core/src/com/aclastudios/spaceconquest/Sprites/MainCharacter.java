@@ -21,6 +21,8 @@ import com.badlogic.gdx.physics.box2d.Shape;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Array;
 
+import java.util.ArrayList;
+
 
 public class MainCharacter extends Sprite {
     public final String[] area = {"Team1Spawn","Team2Spawn"};
@@ -33,11 +35,12 @@ public class MainCharacter extends Sprite {
     protected Fixture fixture;
     private TextureRegion character;
     private int charWeight = 0;
-    private float radius = 13;
+    private float radius = 13/ SpaceConquest.PPM;
     private int charScore;
     private float playerHP = 20;
 
     private Array<FireBall> fireballs;
+    private int fireCount;
 
     private float scale = (float) (1.0/10);
 
@@ -73,6 +76,7 @@ public class MainCharacter extends Sprite {
     private int ammunition;
     private float jetpack_time;
 
+    private ArrayList<Integer> killedBy = new ArrayList<Integer>();
     public MainCharacter(World world,PlayScreen screen, String SpriteName){
         super(screen.getAtlas().findRegion(SpriteName));
         this.screen = screen;
@@ -93,9 +97,10 @@ public class MainCharacter extends Sprite {
 
         defineCharacter();
         character = new TextureRegion(getTexture(), getRegionX() + 200, getRegionY(), 200, 200);
-        setBounds(0, 0, 25, 25);
+        setBounds(0, 0, 25/ SpaceConquest.PPM, 25/ SpaceConquest.PPM);
         setRegion(character);
         fireballs = new Array<FireBall>();
+        fireCount = 0;
 
         lastXPercent = 1;
         lastYPercent = 0;
@@ -117,8 +122,8 @@ public class MainCharacter extends Sprite {
             if (layer.getName().matches(area[screen.getUserID()/(screen.getNumOfPlayers()/2)])) {
                 Array<RectangleMapObject> mo = layer.getObjects().getByType(RectangleMapObject.class);
                 Rectangle rect = mo.get(screen.getUserID()%3).getRectangle();
-                last_x_coord = rect.getX()*SpaceConquest.MAP_SCALE;
-                last_y_coord = rect.getY()*SpaceConquest.MAP_SCALE;
+                last_x_coord = (rect.getX()*SpaceConquest.MAP_SCALE)/ SpaceConquest.PPM;
+                last_y_coord = (rect.getY()*SpaceConquest.MAP_SCALE)/ SpaceConquest.PPM;
                 bdef.position.set(last_x_coord,last_y_coord); //temp set position
 
             }
@@ -249,7 +254,8 @@ public class MainCharacter extends Sprite {
         this.charWeight += charWeight;
         Array<Fixture> fix = b2body.getFixtureList();
         Shape shape = fix.get(0).getShape();
-        shape.setRadius(radius + (this.charWeight * scale * 7));
+        radius = (13 + (this.charWeight * scale * 7))/ SpaceConquest.PPM;
+        shape.setRadius(radius);
 //        System.out.println(shape.getRadius());
 //
 //        System.out.println("charweight: "+this.charWeight);
@@ -273,9 +279,11 @@ public class MainCharacter extends Sprite {
     }
 
     public float[] fire(){
+        fireCount+=1;
         ammunition-=1;
         float[] s = {b2body.getPosition().x,b2body.getPosition().y};
-        FireBall f = new FireBall(screen, s[0], s[1], lastXPercent * (radius +1) , lastYPercent * (radius +1),false,screen.getUserID());
+        FireBall f = new FireBall(screen, s[0], s[1], lastXPercent,
+                lastYPercent, radius, false, screen.getUserID());
         fireballs.add(f);
 //        System.out.println("ammunition left: "+ ammunition);
         return s;
@@ -325,7 +333,11 @@ public class MainCharacter extends Sprite {
         return ((float)1+ (charWeight*scale));
     }
     public void dead(){
+        iron_count = 0;
+        gun_powder_count = 0;
+        oil_count = 0;
         setToDestroy = true;
+        radius=13/ SpaceConquest.PPM;
         this.charWeight = 0;
     }
 
@@ -389,6 +401,7 @@ public class MainCharacter extends Sprite {
     public float[] getGadgetInfo() {
         return new float[]{ammunition,jetpack_time};
     }
+
     public int getOil_count() {
         return oil_count;
     }
@@ -426,6 +439,14 @@ public class MainCharacter extends Sprite {
 
     public float getRadius() {
         return radius;
+    }
+
+    public void setKilledBy(int playerID) {
+        this.killedBy.add(playerID);
+    }
+
+    public int getFireCount() {
+        return fireCount;
     }
 }
 

@@ -22,7 +22,7 @@ public class Iron extends Resources {
 
         FixtureDef fdef = new FixtureDef();
         CircleShape shape = new CircleShape();
-        shape.setRadius(8);
+        shape.setRadius(8/ SpaceConquest.PPM);
 
         //Collision Bit
         fdef.filter.categoryBits = SpaceConquest.IRON_BIT; //what category is this fixture

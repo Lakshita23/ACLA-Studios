@@ -29,7 +29,7 @@ public class WaitScreen implements Screen {
 	@Override
 	public void show() {
 		batch = new SpriteBatch();
-		background = new Texture("waitscreen.jpg");
+		background = new Texture("darkscreen.png");
 		background.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
 		sprite = new Sprite(background);
 		sprite.setSize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());

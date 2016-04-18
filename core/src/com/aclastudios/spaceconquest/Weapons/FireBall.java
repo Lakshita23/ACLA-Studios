@@ -31,7 +31,7 @@ public class FireBall extends Sprite {
     float distance;
     Body b2body;
     int firerID;
-    public FireBall(PlayScreen screen, float x, float y, float xSpd,float ySpd,float radius, boolean enemyFire, int firerID){
+    public FireBall(PlayScreen screen, float x, float y, float xSpd,float ySpd,float radius, boolean enemyFire, int firerID, boolean imba){
         this.xSpd = xSpd;
         this.ySpd = ySpd;
         this.screen = screen;
@@ -46,8 +46,14 @@ public class FireBall extends Sprite {
         }
         fireAnimation = new Animation(0.2f, frames);
         setRegion(fireAnimation.getKeyFrame(0));
-        setBounds(x, y, 6/ SpaceConquest.PPM, 6/ SpaceConquest.PPM);
-        defineFireBall();
+        if(imba) {
+            setBounds(x, y, 18 / SpaceConquest.PPM, 18 / SpaceConquest.PPM);
+            defineIMBAFireBall();
+        }
+        else{
+            setBounds(x, y, 6 / SpaceConquest.PPM, 6 / SpaceConquest.PPM);
+            defineFireBall();
+        }
     }
 
     public void defineFireBall(){
@@ -63,6 +69,34 @@ public class FireBall extends Sprite {
         shape.setRadius(3/ SpaceConquest.PPM);
         if(enemyFire){
             fdef.filter.categoryBits = SpaceConquest.FIREBALL_BIT;
+            fdef.filter.maskBits = SpaceConquest.OBSTACLE_BIT
+                    |SpaceConquest.MAIN_CHARACTER_BIT;
+        }
+        else {
+            fdef.filter.categoryBits = SpaceConquest.FRIENDLY_FIREBALL_BIT;
+            fdef.filter.maskBits = SpaceConquest.OBSTACLE_BIT
+                    |SpaceConquest.CHARACTER_BIT;
+        }
+
+        fdef.shape = shape;
+        fdef.restitution = 1;
+        b2body.createFixture(fdef).setUserData(this);
+        b2body.setLinearVelocity(new Vector2((this.xSpd * 1000), (this.ySpd * 1000)));
+    }
+
+    public void defineIMBAFireBall(){
+        BodyDef bdef = new BodyDef();
+        bdef.position.set(getX() + (this.xSpd *(distance))/ SpaceConquest.PPM, getY() + (this.ySpd*distance)/ SpaceConquest.PPM);
+        bdef.type = BodyDef.BodyType.DynamicBody;
+        bdef.bullet = true;
+        //if(!world.isLocked())
+        b2body = world.createBody(bdef);
+
+        FixtureDef fdef = new FixtureDef();
+        CircleShape shape = new CircleShape();
+        shape.setRadius(9/ SpaceConquest.PPM);
+        if(enemyFire){
+            fdef.filter.categoryBits = SpaceConquest.IMBA_FIREBALL_BIT;
             fdef.filter.maskBits = SpaceConquest.OBSTACLE_BIT
                     |SpaceConquest.MAIN_CHARACTER_BIT;
         }

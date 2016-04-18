@@ -4,6 +4,7 @@ import com.aclastudios.spaceconquest.Helper.AssetLoader;
 import com.aclastudios.spaceconquest.SpaceConquest;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -23,6 +24,7 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle;
 
 public class MenuScreen implements Screen {
+    public static Music menuMusic;
     private Viewport viewport;
     private Stage stage;
     private GameScreenManager gsm;
@@ -56,6 +58,11 @@ public class MenuScreen implements Screen {
         style.up= new TextureRegionDrawable(new TextureRegion(new Texture("button/Button-notPressed.png")));
         style.down= new TextureRegionDrawable(new TextureRegion(new Texture("button/Button-Pressed.png")));
 
+        // adding the music
+        menuMusic = Gdx.audio.newMusic(Gdx.files.internal("menuMusic/!in-game.mp3"));
+        menuMusic.setVolume(1f);
+        menuMusic.setLooping(false);
+        menuMusic.play();
         play = new TextButton("START GAME",style);
         leaderboard = new TextButton("LEADER BOARD", style);
         instructions = new TextButton("HOW TO PLAY", style);

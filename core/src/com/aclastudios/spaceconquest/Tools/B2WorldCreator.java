@@ -63,8 +63,32 @@ public class B2WorldCreator {
             //fdef.isSensor = true;
             fdef.filter.categoryBits = SpaceConquest.STATION_BIT;
             fdef.filter.maskBits = SpaceConquest.MAIN_CHARACTER_BIT;
-            body.createFixture(fdef).setUserData("SpaceStation"); // Add fixture to the body
+            body.createFixture(fdef); // Add fixture to the body
+
         }
+//        for (MapLayer layer : map.getLayers()) {
+//            if (layer.getName().matches("Left Deposit Point")) {
+//                for(MapObject object:layer.getObjects().getByType(PolylineMapObject.class)) {
+//                    float vertices[] = ((PolylineMapObject) object).getPolyline().getTransformedVertices();
+//                    for (int i = 0; i < vertices.length; i++) {
+//                        vertices[i] *= SpaceConquest.MAP_SCALE / SpaceConquest.PPM;
+//                    }
+//                    ChainShape shape2 = new ChainShape();
+//                    shape2.createChain(vertices);
+//
+//                    bdef.type = BodyDef.BodyType.StaticBody;
+//                    //DynamicBody affected by gravity forces and velocity
+//                    //StaticBody dont move, not affected by anything
+//                    //KinematicBody Not affected by gravity but affected by forces and velocity
+//                    bdef.position.set(0, 0);
+//                    body = world.createBody(bdef); // Add body to the world
+//                    fdef.shape = shape2;
+//                    //fdef.isSensor = true;
+//                    fdef.filter.categoryBits = SpaceConquest.OBJECTIVE_BIT;
+//                    fdef.filter.maskBits = SpaceConquest.MAIN_CHARACTER_BIT;
+//                }
+//            }
+//        }
         for (MapObject object : map.getLayers().get(2+(screen.getUserID()/(screen.getNumOfPlayers()/2))).getObjects().getByType(PolylineMapObject.class)) {
             float vertices[] = ((PolylineMapObject) object).getPolyline()
                     .getTransformedVertices();
@@ -81,7 +105,7 @@ public class B2WorldCreator {
             bdef.position.set(0,0);
             body = world.createBody(bdef); // Add body to the world
             fdef.shape = shape2;
-            //fdef.isSensor = true;
+            fdef.isSensor = true;
             fdef.filter.categoryBits = SpaceConquest.ENEMY_STATION_BIT;
             fdef.filter.maskBits = SpaceConquest.MAIN_CHARACTER_BIT;
             body.createFixture(fdef).setUserData("SpaceStation"); // Add fixture to the body

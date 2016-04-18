@@ -30,6 +30,8 @@ public class SideCharacter extends Sprite{
     private int enemyID;
     private int actualFireCount;
     private int fireCount;
+    private int actualIFCount=0;
+    private int IFCount=0;
     private float rateOfFire;
     private float cooldown;
     private Array<FireBall> fireballs;
@@ -119,7 +121,6 @@ public class SideCharacter extends Sprite{
         fdef.filter.maskBits = SpaceConquest.OBSTACLE_BIT
                 | SpaceConquest.IRON_BIT
                 |SpaceConquest.STATION_BIT
-                |SpaceConquest.OBJECT_BIT
                 |SpaceConquest.MAIN_CHARACTER_BIT
                 |SpaceConquest.FRIENDLY_FIREBALL_BIT; //What can the character collide with?
 
@@ -156,14 +157,13 @@ public class SideCharacter extends Sprite{
                 defineCharacter();
             //}
         }else {
-            setScale(getCharacterScale());
             b2body.setTransform(this.x, this.y,angle);
             setPosition(b2body.getPosition().x - getWidth() / 2, b2body.getPosition().y - getHeight() / 2);
             //System.out.println("My weight is " + charWeight);
             setRegion(getFrame(dt));
         }
-        if((cooldown>rateOfFire)&&(fireCount<actualFireCount)){
-            fire();
+        if((cooldown>rateOfFire)&&((fireCount<actualFireCount)||(IFCount<actualIFCount))){
+            fire(IFCount<actualIFCount);
             cooldown=0;
         }
         for(FireBall  ball : fireballs) {
@@ -174,7 +174,7 @@ public class SideCharacter extends Sprite{
     }
     public float getCharacterScale() {
 
-        return ((float)1+ (weight*scale));
+        return ((float)1+ (radius/10));
     }
     public TextureRegion getFrame(float dt){
         currentState = getState();
@@ -217,31 +217,34 @@ public class SideCharacter extends Sprite{
         return destroyed;
     }
 
-    public void updateEnemy(float x,float y, float angle,float weight,float xPercent,float yPercent,int actualFireCount, float xSpeed,float ySpeed){
+    public void updateEnemy(float x,float y, float angle,float radius,float xPercent,float yPercent,int actualFireCount, float xSpeed,float ySpeed, int IFCount){
         this.x=x;
         this.y=y;
         b2body.setLinearVelocity(xSpeed,ySpeed);
         this.angle = angle;
-        this.weight = weight;
         this.actualFireCount = actualFireCount;
+        this.actualIFCount = IFCount;
         xSpeedPercent = xPercent;
         ySpeedPercent = yPercent;
         if(xPercent!=0||yPercent!=0){
             lastYPercent=yPercent;
             lastXPercent = xPercent;
         }
+        setScale(getCharacterScale());
         Array<Fixture> fix = b2body.getFixtureList();
         Shape shape = fix.get(0).getShape();
-        radius = (13 +(this.weight * scale * 7))/ SpaceConquest.PPM;
         shape.setRadius(radius);
 //        System.out.println(shape.getRadius());
         setRotation(angle);
     }
-    public float[] fire(){
+    public float[] fire(boolean imbaOrNot){
         System.out.println("user "+enemyID+" is firing");
-        fireCount+=1;
+        if(imbaOrNot)
+            IFCount++;
+        else
+            fireCount+=1;
         float[] s = {b2body.getPosition().x,b2body.getPosition().y};
-        FireBall f = new FireBall(screen, s[0], s[1], lastXPercent, lastYPercent,radius,true,enemyID);
+        FireBall f = new FireBall(screen, s[0], s[1], lastXPercent, lastYPercent,radius,true,enemyID,imbaOrNot);
         fireballs.add(f);
 //        System.out.println("ammunition left: "+ ammunition);
         return s;

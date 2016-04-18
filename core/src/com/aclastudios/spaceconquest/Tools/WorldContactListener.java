@@ -17,6 +17,9 @@ import com.badlogic.gdx.physics.box2d.Manifold;
 public class WorldContactListener implements ContactListener {
     private PlayScreen screen;
     private SpaceConquest game;
+    private boolean fromEnemyRegion = false;
+    private boolean fromNeutralRegion = true;
+
     public WorldContactListener(PlayScreen screen,SpaceConquest game) {
         this.screen=screen;
         this.game=game;
@@ -121,6 +124,12 @@ public class WorldContactListener implements ContactListener {
                 else
                     ((FireBall)fixB.getUserData()).setToDestroy();
                 break;
+            case SpaceConquest.IMBA_FIREBALL_BIT | SpaceConquest.OBSTACLE_BIT:
+                if(fixA.getFilterData().categoryBits == SpaceConquest.IMBA_FIREBALL_BIT)
+                    ((FireBall)fixA.getUserData()).setToDestroy();
+                else
+                    ((FireBall)fixB.getUserData()).setToDestroy();
+                break;
             case SpaceConquest.FRIENDLY_FIREBALL_BIT | SpaceConquest.CHARACTER_BIT:
                 System.out.println("collision with side character started");
                 if(fixA.getFilterData().categoryBits == SpaceConquest.FIREBALL_BIT) {
@@ -152,7 +161,7 @@ public class WorldContactListener implements ContactListener {
                     try {
                         ((MainCharacter) fixB.getUserData()).setKilledBy(((FireBall) fixA.getUserData()).getFirerID());
                         ((FireBall) fixA.getUserData()).setToDestroy();
-                        ((MainCharacter) fixB.getUserData()).reduceHP();
+                        ((MainCharacter) fixB.getUserData()).takeFireballDamage(false);
                     }catch (Exception e){
                         System.out.println("*********************Error on fireball ***************** " + e.getMessage());
 
@@ -176,19 +185,106 @@ public class WorldContactListener implements ContactListener {
                     try {
                         ((MainCharacter) fixA.getUserData()).setKilledBy(((FireBall) fixB.getUserData()).getFirerID());
                         ((FireBall) fixB.getUserData()).setToDestroy();
-                        ((MainCharacter) fixA.getUserData()).reduceHP();
+                        ((MainCharacter) fixA.getUserData()).takeFireballDamage(false);
                     }catch (Exception e){
                         System.out.println("*********************Error on fireball ***************** " + e.getMessage());
                     }
                 }
                 System.out.println("collision with main character ended");
                 break;
+            case SpaceConquest.IMBA_FIREBALL_BIT | SpaceConquest.MAIN_CHARACTER_BIT:
+                System.out.println("collision with main character started");
+                if(fixA.getFilterData().categoryBits == SpaceConquest.IMBA_FIREBALL_BIT) {
+                    if(((MainCharacter) fixB.getUserData()).getHP()<=10){
+                        game.playServices.MessagetoParticipant(((FireBall) fixA.getUserData()).getFirerID(), "KillBonus:"+1);
+                        int team = 0;
+                        if (game.multiplayerSessionInfo.mId_num<screen.getNumOfPlayers()/2){
+                            team=team+game.multiplayerSessionInfo.mParticipants.size()/2;
+                        } else {
+                            team=team-game.multiplayerSessionInfo.mParticipants.size()/2;
+                        }
+                        System.out.println("team from contact listener: "+team);
+                        if (game.multiplayerSessionInfo.mId_num!=0) {
+                            game.playServices.MessagetoServer("Serverpoints:" + team + ":" + 50);
+                        } else {
+                            screen.addscore(team+"",50);
+                        }
+                    }
+                    try {
+                        ((MainCharacter) fixB.getUserData()).setKilledBy(((FireBall) fixA.getUserData()).getFirerID());
+                        ((FireBall) fixA.getUserData()).setToDestroy();
+                        ((MainCharacter) fixB.getUserData()).takeFireballDamage(true);
+                    }catch (Exception e){
+                        System.out.println("*********************Error on fireball ***************** " + e.getMessage());
+
+                    }
+                }
+                else {
+                    if(((MainCharacter) fixA.getUserData()).getHP()<=10){
+                        game.playServices.MessagetoParticipant(((FireBall) fixB.getUserData()).getFirerID(), "KillBonus:"+1);
+                        int team = 0;
+                        if (game.multiplayerSessionInfo.mId_num<screen.getNumOfPlayers()/2){
+                            team=team+game.multiplayerSessionInfo.mParticipants.size()/2;
+                        } else {
+                            team=team-game.multiplayerSessionInfo.mParticipants.size()/2;
+                        }
+                        if (game.multiplayerSessionInfo.mId_num!=0) {
+                            game.playServices.MessagetoServer("Serverpoints:" + team + ":" + 50);
+                        } else {
+                            screen.addscore(team+"",50);
+                        }
+                    }
+                    try {
+                        ((MainCharacter) fixA.getUserData()).setKilledBy(((FireBall) fixB.getUserData()).getFirerID());
+                        ((FireBall) fixB.getUserData()).setToDestroy();
+                        ((MainCharacter) fixA.getUserData()).takeFireballDamage(true);
+                    }catch (Exception e){
+                        System.out.println("*********************Error on fireball ***************** " + e.getMessage());
+                    }
+                }
+                System.out.println("collision with main character ended");
+                break;
+            case SpaceConquest.ENEMY_STATION_BIT | SpaceConquest.MAIN_CHARACTER_BIT:
+                if(fixA.getFilterData().categoryBits == SpaceConquest.MAIN_CHARACTER_BIT){
+                    ((MainCharacter) fixA.getUserData()).setInEnemyZone(true);
+                }else{
+                    ((MainCharacter) fixB.getUserData()).setInEnemyZone(true);
+                }
+//                if(hp<=1) {
+//                    int team = 0;
+//                    if (game.multiplayerSessionInfo.mId_num < screen.getNumOfPlayers() / 2) {
+//                        team = team + game.multiplayerSessionInfo.mParticipants.size() / 2;
+//                    } else {
+//                        team = team - game.multiplayerSessionInfo.mParticipants.size() / 2;
+//                    }
+//                    System.out.println("team from contact listener: " + team);
+//                    if (game.multiplayerSessionInfo.mId_num != 0) {
+//                        game.playServices.MessagetoServer("Serverpoints:" + team + ":" + 50);
+//                    } else {
+//                        screen.addscore(team + "", 50);
+//                    }
+//                }
+                break;
         }
     }
 
     @Override
     public void endContact(Contact contact) {
+        Fixture fixA = contact.getFixtureA();
+        Fixture fixB = contact.getFixtureB();
 
+        int cDef = fixA.getFilterData().categoryBits | fixB.getFilterData().categoryBits;
+        switch (cDef) {
+            case SpaceConquest.ENEMY_STATION_BIT | SpaceConquest.MAIN_CHARACTER_BIT:
+                if (fixA.getFilterData().categoryBits == SpaceConquest.MAIN_CHARACTER_BIT) {
+                    ((MainCharacter) fixA.getUserData()).setInEnemyZone(false);
+
+                } else {
+                    ((MainCharacter) fixB.getUserData()).setInEnemyZone(false);
+                }
+
+                break;
+        }
     }
 
     @Override

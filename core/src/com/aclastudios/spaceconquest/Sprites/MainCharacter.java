@@ -36,7 +36,7 @@ public class MainCharacter extends Sprite {
     private TextureRegion character;
     private int knapsackCount = 0;
     private int additionalWeight = 0;
-    private int threshold = 10;
+    private int threshold = 5;
     private float defaultRadius = 13/ SpaceConquest.PPM;
     private float radius = 13/ SpaceConquest.PPM;
     private int charScore;
@@ -64,7 +64,10 @@ public class MainCharacter extends Sprite {
     private float buffTimer;
     private int buffoutTime = 15;
     private int buffWeight = 5;
-    private float buffRadius = 20/ SpaceConquest.PPM;
+    private float buffRadius = 25/ SpaceConquest.PPM;
+    private boolean enableBuff = false;
+    private int valueForBuff = 10;
+    private int buffCoolDown = 30;
 
     //potentially useless
     private float x_value;
@@ -182,7 +185,7 @@ public class MainCharacter extends Sprite {
     public void defineBuffCharacter(){
         buffTimer = 0;
         buffMode=true;
-        ammunition = 500;
+        ammunition = 200;
         this.additionalWeight += buffWeight;
         Array<Fixture> fix = b2body.getFixtureList();
         Shape shape = fix.get(0).getShape();
@@ -319,7 +322,7 @@ public class MainCharacter extends Sprite {
 
 
             //stop user from collecting resource
-            if (this.additionalWeight >= 5) {
+            if (this.additionalWeight >= 10) {
                 Filter filter = fix.get(0).getFilterData();
                 filter.maskBits = SpaceConquest.OBSTACLE_BIT
                         | SpaceConquest.FIREBALL_BIT
@@ -359,8 +362,7 @@ public class MainCharacter extends Sprite {
     }
 
     public void depositResource() {
-        buffMode = false;
-        additionalWeight = 0;
+        additionalWeight = (buffMode?buffWeight:0);
         knapsackCount = 0;
         radius = defaultRadius;
 
@@ -379,6 +381,11 @@ public class MainCharacter extends Sprite {
         ammunition = 20 + ammoLevel*15;
         jetpack_time = (float) (jpLevel*2.0);
 
+        if(iron_storage>valueForBuff&&gun_powder_storage>valueForBuff&&oil_storage>valueForBuff){
+            enableBuff = true;
+            buffCoolDown-=(Math.min(Math.min(iron_storage%valueForBuff,gun_powder_storage%valueForBuff),
+                    oil_storage%valueForBuff));
+        }
         Array<Fixture> fix = b2body.getFixtureList();
         Shape shape = fix.get(0).getShape();
         shape.setRadius(buffMode?buffRadius:defaultRadius);
@@ -533,6 +540,14 @@ public class MainCharacter extends Sprite {
 
     public int getIFCount() {
         return IFCount;
+    }
+
+    public boolean isEnableBuff() {
+        return enableBuff;
+    }
+
+    public int getBuffCoolDown() {
+        return buffCoolDown;
     }
 }
 

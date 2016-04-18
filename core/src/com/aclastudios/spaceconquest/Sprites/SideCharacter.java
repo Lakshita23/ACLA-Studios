@@ -157,7 +157,6 @@ public class SideCharacter extends Sprite{
                 defineCharacter();
             //}
         }else {
-            setScale(getCharacterScale());
             b2body.setTransform(this.x, this.y,angle);
             setPosition(b2body.getPosition().x - getWidth() / 2, b2body.getPosition().y - getHeight() / 2);
             //System.out.println("My weight is " + charWeight);
@@ -175,7 +174,7 @@ public class SideCharacter extends Sprite{
     }
     public float getCharacterScale() {
 
-        return ((float)1+ (weight*scale));
+        return ((float)1+ (radius/10));
     }
     public TextureRegion getFrame(float dt){
         currentState = getState();
@@ -230,6 +229,7 @@ public class SideCharacter extends Sprite{
             lastYPercent=yPercent;
             lastXPercent = xPercent;
         }
+        setScale(getCharacterScale());
         Array<Fixture> fix = b2body.getFixtureList();
         Shape shape = fix.get(0).getShape();
         shape.setRadius(radius);

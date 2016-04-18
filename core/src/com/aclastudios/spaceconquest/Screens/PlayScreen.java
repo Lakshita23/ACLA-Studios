@@ -14,6 +14,7 @@ import com.aclastudios.spaceconquest.Tools.HealthBar;
 import com.aclastudios.spaceconquest.Tools.WorldContactListener;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
@@ -63,7 +64,7 @@ public class PlayScreen implements Screen {
 
     private float rateOfFire = (float) 0.3;
     private float coolDown;
-    private float buffCoolDown=30;
+    private float buffCoolDown=20;
 //    private Array<FireBall> networkFireballs;
 
     private float x;
@@ -213,8 +214,14 @@ public class PlayScreen implements Screen {
         button.setBounds(0,0,40/ SpaceConquest.PPM,40/ SpaceConquest.PPM);
         jetpack_Button = new ImageButton(new TextureRegionDrawable(new TextureRegion(orange)), new TextureRegionDrawable(new TextureRegion(red)));
         jetpack_Button.setBounds(0,0,40/ SpaceConquest.PPM,40/ SpaceConquest.PPM);
-        buffMode_Button = new ImageButton(new TextureRegionDrawable(new TextureRegion(orange)), new TextureRegionDrawable(new TextureRegion(red)));
-        buffMode_Button.setBounds(0,0,40/ SpaceConquest.PPM,40/ SpaceConquest.PPM);
+        ImageButton.ImageButtonStyle imb = new ImageButton.ImageButtonStyle(new TextureRegionDrawable(new TextureRegion(orange)), new TextureRegionDrawable(new TextureRegion(red))
+                ,null,null,null,null);
+        Color tintColor = new Color(0.5f, 0.5f, 0.5f, 1f);
+        imb.disabled = buttonSkin.newDrawable(new TextureRegionDrawable(new TextureRegion(red)),tintColor);
+//        buffMode_Button = new ImageButton(new TextureRegionDrawable(new TextureRegion(orange)), new TextureRegionDrawable(new TextureRegion(red)));
+        buffMode_Button = new ImageButton(imb);
+        buffMode_Button.setDisabled(true);
+        buffMode_Button.setBounds(0, 0, 40 / SpaceConquest.PPM, 40 / SpaceConquest.PPM);
         //table.add(button);
 
         //Create a Stage and add TouchPad
@@ -279,9 +286,15 @@ public class PlayScreen implements Screen {
                     (float)(mainCharacter.getySpeedPercent() * 2 * speedreduction)), mainCharacter.b2body.getWorldCenter(), true);
         }
 
-        if(buffMode_Button.isPressed()&& buffCoolDown >30 && !mainCharacter.isBuffMode()){
-            mainCharacter.defineBuffCharacter();
-            buffCoolDown =0;
+        if(buffCoolDown >mainCharacter.getBuffCoolDown()&&mainCharacter.isEnableBuff()) {
+            if(buffMode_Button.isDisabled()) {
+                buffMode_Button.setDisabled(false);
+            }
+            if (buffMode_Button.isPressed() && !mainCharacter.isBuffMode()) {
+                buffMode_Button.setDisabled(true);
+                mainCharacter.defineBuffCharacter();
+                buffCoolDown = 0;
+            }
         }
 
     }
@@ -466,7 +479,7 @@ public class PlayScreen implements Screen {
 
 
             //render our Box2DDebugLines
-//            b2dr.render(world, gamecam.combined);
+            b2dr.render(world, gamecam.combined);
 
             //Join/Combine hud camera to game batch
             game.batch.setProjectionMatrix(hud.stage.getCamera().combined);

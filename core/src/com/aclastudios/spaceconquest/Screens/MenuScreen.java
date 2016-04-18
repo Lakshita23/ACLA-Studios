@@ -24,7 +24,7 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle;
 
 public class MenuScreen implements Screen {
-    private Music menuMusic;
+    public static Music menuMusic;
     private Viewport viewport;
     private Stage stage;
     private GameScreenManager gsm;

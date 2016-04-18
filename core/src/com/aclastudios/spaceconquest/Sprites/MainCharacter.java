@@ -42,7 +42,7 @@ public class MainCharacter extends Sprite {
 
     private float radius = 13/ SpaceConquest.PPM;
     private int charScore;
-    private float playerHP = 20;
+    private float playerHP = 10;
 
     private Array<FireBall> fireballs;
     private int fireCount;
@@ -64,8 +64,8 @@ public class MainCharacter extends Sprite {
     private Animation running;
     private float stateTimer;
     private float buffTimer;
-    private int buffoutTime = 15;
-    private int buffWeight = 5;
+    private int buffoutTime = 10;
+    private int buffWeight = 10;
     private float buffRadius = 25/ SpaceConquest.PPM;
     private boolean enableBuff = false;
     private int valueForBuff = 10;
@@ -88,8 +88,10 @@ public class MainCharacter extends Sprite {
     private int gun_powder_storage = 0;
 
     private int ammunition;
+    private int default_ammunition = 20;
     private int ammoLevel = 1;
     private float jetpack_time;
+    private float default_jetpack_time = 6;
     private int jpLevel = 1;
 
     private boolean inEnemyZone = false;
@@ -133,9 +135,9 @@ public class MainCharacter extends Sprite {
     }
 
     public void defineCharacter(){
+        knapsackCount = 0;
         buffMode = false;
-        ammunition = 35;
-        jetpack_time = 2;
+        updateGadgetLevel();
         BodyDef bdef = new BodyDef();
         //Array<RectangleMapObject> object = map.getLayers().get(7).getObjects().getByType(RectangleMapObject.class);
         for (MapLayer layer : map.getLayers()) {
@@ -175,6 +177,12 @@ public class MainCharacter extends Sprite {
 //        fixture = b2body.createFixture(fdef);
     }
 
+    public void updateGadgetLevel(){
+        ammoLevel = Math.min(iron_storage/threshold,gun_powder_storage/threshold);
+        jpLevel = Math.min(iron_storage/threshold,oil_storage/threshold);
+        ammunition = default_ammunition+ammoLevel*20;
+        jetpack_time = default_jetpack_time + jpLevel*5;
+    }
     public void redefineCharacter(){
         ammunition = (ammunition>100?100:ammunition);
         this.additionalWeight -= buffWeight;
@@ -182,9 +190,11 @@ public class MainCharacter extends Sprite {
         Shape shape = fix.get(0).getShape();
         shape.setRadius(radius);
         this.playerHP = (playerHP>20?20:playerHP);
-        screen.setRateOfFire((float) 0.3);
     }
     public void defineBuffCharacter(){
+        iron_storage-=valueForBuff;
+        gun_powder_storage-=valueForBuff;
+        oil_storage-=valueForBuff;
         buffTimer = 0;
         buffMode=true;
         ammunition = 200;
@@ -193,7 +203,6 @@ public class MainCharacter extends Sprite {
         Shape shape = fix.get(0).getShape();
         shape.setRadius(buffRadius);
         this.playerHP = 100;
-        screen.setRateOfFire((float) 0.1);
     }
     public void update(float dt){
         stateTime += dt;
@@ -315,8 +324,8 @@ public class MainCharacter extends Sprite {
             Array<Fixture> fix = b2body.getFixtureList();
             Shape shape = fix.get(0).getShape();
 //            radius = defaultRadius + ((this.additionalWeight * scale * 7)) / SpaceConquest.PPM;
-            radius = defaultRadius + ((this.additionalWeight * scale * 7)) / SpaceConquest.PPM;
-            shape.setRadius((buffMode)?buffRadius:radius);
+//            radius = defaultRadius + ((this.additionalWeight * scale * 7)) / SpaceConquest.PPM;
+//            shape.setRadius((buffMode)?buffRadius:radius);
 
 //        System.out.println(shape.getRadius());
 //
@@ -375,6 +384,7 @@ public class MainCharacter extends Sprite {
         iron_count = 0;
         gun_powder_count=0;
         oil_count = 0;
+
         if(iron_storage>(ammoLevel*10) && gun_powder_storage>(ammoLevel*10)){
             ammoLevel+=1;
         }
@@ -388,6 +398,7 @@ public class MainCharacter extends Sprite {
             buffCoolDown-=(Math.min(Math.min(iron_storage%valueForBuff,gun_powder_storage%valueForBuff),
                     oil_storage%valueForBuff));
         }
+
         Array<Fixture> fix = b2body.getFixtureList();
         Shape shape = fix.get(0).getShape();
         shape.setRadius(buffMode?buffRadius:defaultRadius);
@@ -415,8 +426,8 @@ public class MainCharacter extends Sprite {
         oil_count = 0;
         setToDestroy = true;
         radius=13/ SpaceConquest.PPM;
-        this.additionalWeight = 0;
-        this.knapsackCount = 0;
+        additionalWeight = 0;
+        knapsackCount = 0;
 
     }
 

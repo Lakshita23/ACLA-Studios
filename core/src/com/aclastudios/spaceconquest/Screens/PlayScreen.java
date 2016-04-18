@@ -422,7 +422,7 @@ public class PlayScreen implements Screen {
     public void render(float delta) {
         try {
             if (hud.isTimeUp() == true) {
-
+                music.stop();
                 int len = game.multiplayerSessionInfo.mParticipants.size();
                 int myId = game.multiplayerSessionInfo.mId_num;
                 int redScore = hud.getRedScore();

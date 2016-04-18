@@ -97,6 +97,7 @@ public class playersSelectScreen implements Screen {
         play1.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
+                MenuScreen.menuMusic.stop();
                 if (game.playServices.getSignedInGPGS()) {
                     game.playServices.startQuickGame(1);
                     game.multiplayerSessionInfo.mState = game.multiplayerSessionInfo.ROOM_WAIT;
@@ -110,6 +111,7 @@ public class playersSelectScreen implements Screen {
         play2.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
+                MenuScreen.menuMusic.stop();
                 if (game.playServices.getSignedInGPGS()) {
                     game.playServices.startQuickGame(3);
                     game.multiplayerSessionInfo.mState = game.multiplayerSessionInfo.ROOM_WAIT;
@@ -123,6 +125,7 @@ public class playersSelectScreen implements Screen {
         play3.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
+                MenuScreen.menuMusic.stop();
                 if (game.playServices.getSignedInGPGS()) {
                     game.playServices.startQuickGame(5);
                     game.multiplayerSessionInfo.mState = game.multiplayerSessionInfo.ROOM_WAIT;

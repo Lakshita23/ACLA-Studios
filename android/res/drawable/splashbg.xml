@@ -3,9 +3,4 @@
     <item
         android:drawable="@drawable/aclastudios"/>
 
-    <item>
-        <bitmap
-            android:gravity="center"
-            android:src="@drawable/ic_launcher"/>
-    </item>
 </layer-list>

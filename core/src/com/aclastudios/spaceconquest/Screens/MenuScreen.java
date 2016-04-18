@@ -37,11 +37,8 @@ public class MenuScreen implements Screen {
 
     private TextButtonStyle style;
     private TextButton play;
-    private TextButton login;
+    private TextButton leaderboard;
     private TextButton instructions;
-
-    private Image mute;
-    private Image unmute;
 
     public MenuScreen(SpaceConquest game, GameScreenManager gsm){
         this.gsm = gsm;
@@ -49,25 +46,22 @@ public class MenuScreen implements Screen {
         viewport = new FitViewport(SpaceConquest.V_WIDTH, SpaceConquest.V_HEIGHT, new OrthographicCamera());
         stage = new Stage(viewport, (game).batch);
 
-        BUTTON_WIDTH = 160;
+        BUTTON_WIDTH = 120;
         BUTTON_HEIGHT = 20;
 
         style = new TextButtonStyle();  //can customize
         style.font = new BitmapFont(Gdx.files.internal("fonts/spaceAge.fnt"));
         style.font.setColor(Color.BLUE);
-        style.font.getData().setScale(0.3f, 0.3f);
-        style.up= new TextureRegionDrawable(new TextureRegion(new Texture("button/Button-notPressed2.png")));
-        style.down= new TextureRegionDrawable(new TextureRegion(new Texture("button/Button-Pressed2.png")));
+        style.font.getData().setScale(0.2f, 0.2f);
+        style.up= new TextureRegionDrawable(new TextureRegion(new Texture("button/Button-notPressed.png")));
+        style.down= new TextureRegionDrawable(new TextureRegion(new Texture("button/Button-Pressed.png")));
 
 //        style.unpressedOffsetX = 5f;
 //        style.pressedOffsetX = style.unpressedOffsetX + 1f;
 //        style.pressedOffsetY = -1f;
         play = new TextButton("START GAME",style);
-        login = new TextButton("LEADER BOARD", style);
+        leaderboard = new TextButton("LEADER BOARD", style);
         instructions = new TextButton("HOW TO PLAY", style);
-
-        mute = new Image(new TextureRegionDrawable(new TextureRegion(new Texture("button/sound-on.png"))));
-        unmute = new Image(new TextureRegionDrawable(new TextureRegion(new Texture("button/sound-off.png"))));
 
         System.out.println("constructor");
         show();
@@ -84,34 +78,23 @@ public class MenuScreen implements Screen {
         //AssetLoader.menuMusic.play();
 
         batch = new SpriteBatch();
-        background = new Texture("screens/Screen2.png");
+        background = new Texture("screens/Screen.png");
 
         background.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
         sprite = new Sprite(background);
         sprite.setSize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 
         play.setSize(this.BUTTON_WIDTH / 3 * 2, this.BUTTON_HEIGHT);
-        play.setPosition(270, 140);
+        play.setPosition(30, 30);
         stage.addActor(play);
 
-        login.setSize(this.BUTTON_WIDTH / 3 * 2, this.BUTTON_HEIGHT);
-        login.setPosition(270, 100);
-        stage.addActor(login);
+        leaderboard.setSize(this.BUTTON_WIDTH / 3 * 2, this.BUTTON_HEIGHT);
+        leaderboard.setPosition(165, 30);
+        stage.addActor(leaderboard);
 
         instructions.setSize(this.BUTTON_WIDTH / 3 * 2, this.BUTTON_HEIGHT);
-        instructions.setPosition(270, 60);
+        instructions.setPosition(292, 30);
         stage.addActor(instructions);
-
-        mute.setScale(0.4f, 0.4f);
-        mute.setPosition(3, 195);
-        unmute.setScale(0.4f, 0.4f);
-        unmute.setPosition(3, 195);
-        if (AssetLoader.VOLUME == 1) {
-            stage.addActor(mute);
-        } else {
-            stage.addActor(unmute);
-        }
-
 
         System.out.println("play");
         play.addListener(new ClickListener() {
@@ -122,7 +105,7 @@ public class MenuScreen implements Screen {
             }
         });
 
-        login.addListener(new ClickListener() {
+        leaderboard.addListener(new ClickListener() {
               @Override
             public void clicked(InputEvent event, float x, float y) {
                   game.multiplayerSessionInfo.mState = game.multiplayerSessionInfo.ROOM_LEADER;
@@ -138,27 +121,6 @@ public class MenuScreen implements Screen {
                 // TODO Set to tutorial screen
                 //  gsm.set(new StoryScreen(game, gsm));
             }
-        });
-
-        mute.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                AssetLoader.muteSFX();
-                mute.remove();
-                stage.addActor(unmute);
-            }
-
-        });
-
-        unmute.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                AssetLoader.unmuteSFX();
-                AssetLoader.clickSound.play(AssetLoader.VOLUME);
-                unmute.remove();
-                stage.addActor(mute);
-            }
-
         });
 
 

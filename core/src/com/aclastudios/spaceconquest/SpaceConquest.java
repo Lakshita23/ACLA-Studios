@@ -15,8 +15,8 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 public class SpaceConquest extends Game {
 	public static final int V_WIDTH = 400; //Virtual screen width of the game
 	public static final int V_HEIGHT =208; //Virtual screen height of the game
-	public static final float PPM = 10;
-	public static final float MAP_SCALE = (float) 0.8;
+	public static final float PPM = 2;
+	public static final float MAP_SCALE = (float) 0.7;
 	public SpriteBatch batch;
 
 	private GameScreenManager gsm;
@@ -31,6 +31,7 @@ public class SpaceConquest extends Game {
 	public static final short OIL_BIT = 128;
 	public static final short ENEMY_STATION_BIT = 256;
 	public static final short FIREBALL_BIT = 1024;
+	public static final short FRIENDLY_FIREBALL_BIT = 2048;
 
 	public PlayServices playServices;
 	public MultiplayerSessionInfo multiplayerSessionInfo;

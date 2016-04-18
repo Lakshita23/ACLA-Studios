@@ -14,7 +14,7 @@ import com.badlogic.gdx.physics.box2d.FixtureDef;
 public class GunPowder extends Resources {
 
     public GunPowder(PlayScreen screen, float x, float y) {
-        super(screen,"mushroom", x, y);
+        super(screen,"gunpowder_ore", x, y);
     }
 
     @Override
@@ -26,7 +26,7 @@ public class GunPowder extends Resources {
 
         FixtureDef fdef = new FixtureDef();
         CircleShape shape = new CircleShape();
-        shape.setRadius(8);
+        shape.setRadius(8/ SpaceConquest.PPM);
 
         //Collision Bit
         fdef.filter.categoryBits = SpaceConquest.GUNPOWDER_BIT; //what category is this fixture

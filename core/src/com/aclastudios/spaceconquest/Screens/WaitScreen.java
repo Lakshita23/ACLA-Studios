@@ -5,6 +5,7 @@ import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -12,42 +13,46 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 
 public class WaitScreen implements Screen {
 
-	private Stage stage;
-	private SpriteBatch batcher;
-	private Sprite sprite;
 	private SpaceConquest game;
 	private GameScreenManager gsm;
 
-	private float gameWidth;
-	private float gameHeight;
+	private SpriteBatch batch;
+	private Texture background;
+	private Sprite sprite;
 
 	public WaitScreen(SpaceConquest game, GameScreenManager gsm) {
 		this.game = game;
 		this.gsm = gsm;
+		show();
 	}
 
 	@Override
 	public void show() {
+		batch = new SpriteBatch();
+		background = new Texture("waitscreen.jpg");
+		background.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+		sprite = new Sprite(background);
+		sprite.setSize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 	}
 
 	@Override
 	public void render(float delta) {
 		Gdx.gl.glClearColor(0, 0, 0, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
+		batch.begin();
+		sprite.draw(batch);
+		batch.end();
+
 		if ((game.multiplayerSessionInfo.mState == game.multiplayerSessionInfo.ROOM_PLAY))
 			//	&& (game.multiplayerSessionInfo.serverAddress != null)
 			//	&& (game.multiplayerSessionInfo.serverPort != 0))
 		{
-			System.out.println("Condition fufilled!");
 			// Create MMClient and connect to server
-			System.out.println("New world made");
-			System.out.println("New Renderer made");
 			try {
 			} catch (Exception e) {
-				System.out.println("Error @ HERE!");
 				e.printStackTrace();
 			}
-			System.out.println("Setting screen to new loading screen.");
 			gsm.set(new PlayScreen(game, gsm));
 
 		} else if (game.multiplayerSessionInfo.mState == game.multiplayerSessionInfo.ROOM_MENU) {

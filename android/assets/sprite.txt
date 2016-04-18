@@ -1,0 +1,40 @@
+sprites.png
+size: 1838, 202
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+DAACTAR
+  rotate: false
+  xy: 1, 1
+  size: 800, 200
+  orig: 800, 200
+  offset: 0, 0
+  index: -1
+PYRO
+  rotate: false
+  xy: 803, 1
+  size: 800, 200
+  orig: 800, 200
+  offset: 0, 0
+  index: -1
+gunpowder_ore
+  rotate: false
+  xy: 1605, 1
+  size: 150, 150
+  orig: 150, 150
+  offset: 0, 0
+  index: -1
+iron_ore
+  rotate: false
+  xy: 1757, 83
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: -1
+oil_ore
+  rotate: false
+  xy: 1757, 1
+  size: 80, 80
+  orig: 80, 80
+  offset: 0, 0
+  index: -1

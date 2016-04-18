@@ -5,9 +5,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 import java.util.Stack;
 
-/**
- * Created by Lakshita on 3/16/2016.
- */
+
 public class GameScreenManager {
     private Stack<Screen> states;
 

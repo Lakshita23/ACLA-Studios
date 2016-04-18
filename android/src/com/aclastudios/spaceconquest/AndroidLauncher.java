@@ -1,9 +1,8 @@
 package com.aclastudios.spaceconquest;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+
+import java.io.UnsupportedEncodingException;
+import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -12,10 +11,11 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.WindowManager;
 
 import com.aclastudios.spaceconquest.PlayGameService.MultiplayerSessionInfo;
 import com.aclastudios.spaceconquest.PlayGameService.PlayServices;
-import com.badlogic.gdx.Game;
+import com.aclastudios.spaceconquest.Screens.PlayScreen;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.android.AndroidApplication;
 import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration;
@@ -40,6 +40,7 @@ public class AndroidLauncher extends AndroidApplication implements GameHelperLis
 	final static int RC_SELECT_PLAYERS = 10000;
 	final static int RC_INVITATION_INBOX = 10001;
 	final static int RC_WAITING_ROOM = 10002;
+	final static int RC_LEADER = 10003;
 	private static final int RC_SIGN_IN = 9001;
 
 
@@ -47,7 +48,9 @@ public class AndroidLauncher extends AndroidApplication implements GameHelperLis
 	public GoogleApiClient mGoogleApiClient;
 	private GPSListeners mGooglePlayListeners;
 	public MultiplayerSessionInfo MultiplayerSession;
-	private BufferedReader bufferedReader;
+
+	private PlayScreen screen;
+
 
 
 	@Override
@@ -78,7 +81,6 @@ public class AndroidLauncher extends AndroidApplication implements GameHelperLis
 		config.useImmersiveMode = true;
 		initialize(new SpaceConquest(this, MultiplayerSession), config);
 
-
 	}
 
 	@Override
@@ -90,7 +92,7 @@ public class AndroidLauncher extends AndroidApplication implements GameHelperLis
 	@Override
 	public void onStop(){
 		super.onStop();
-		gameHelper.onStop();
+//		gameHelper.onStop();
 	}
 
 	@Override
@@ -128,6 +130,10 @@ public class AndroidLauncher extends AndroidApplication implements GameHelperLis
 			case RC_SIGN_IN:
 				gameHelper.onActivityResult(requestCode, responseCode, intent);
 				break;
+			case RC_LEADER:
+				if (responseCode == Activity.RESULT_CANCELED){
+					MultiplayerSession.mState= MultiplayerSession.ROOM_MENU;
+				}
 		}
 	}
 
@@ -168,7 +174,7 @@ public class AndroidLauncher extends AndroidApplication implements GameHelperLis
 
 	@Override
 	public void submitScoreGPGS(int score) {
-		Games.Leaderboards.submitScore(gameHelper.getApiClient(), "CgkI6574wJUXEAIQBw", score);
+		Games.Leaderboards.submitScore(gameHelper.getApiClient(), "CgkI8bDhycAZEAIQAQ", score);
 
 	}
 
@@ -180,7 +186,7 @@ public class AndroidLauncher extends AndroidApplication implements GameHelperLis
 	@Override
 	public void getLeaderboardGPGS() {
 		if (gameHelper.isSignedIn()) {
-			startActivityForResult(Games.Leaderboards.getLeaderboardIntent(gameHelper.getApiClient(), "CgkI6574wJUXEAIQBw"), 100);
+			startActivityForResult(Games.Leaderboards.getLeaderboardIntent(gameHelper.getApiClient(), "CgkI8bDhycAZEAIQAQ"), RC_LEADER);
 		}
 		else if (!gameHelper.isConnecting()) {
 			loginGPGS();
@@ -190,7 +196,7 @@ public class AndroidLauncher extends AndroidApplication implements GameHelperLis
 	@Override
 	public void getAchievementsGPGS() {
 		if (gameHelper.isSignedIn()) {
-			startActivityForResult(Games.Achievements.getAchievementsIntent(gameHelper.getApiClient()), 101);
+			startActivityForResult(Games.Achievements.getAchievementsIntent(gameHelper.getApiClient()), RC_LEADER);
 		}
 		else if (!gameHelper.isConnecting()) {
 			loginGPGS();
@@ -207,16 +213,16 @@ public class AndroidLauncher extends AndroidApplication implements GameHelperLis
 
 
 	@Override
-	public void startQuickGame() {
+	public void startQuickGame(int num) {
 		// quick-start a game with 1 randomly selected opponent
 		if (gameHelper.isSignedIn()) {
 			//Set multiplayer flag to be true so that game screen will choose to create multiplayer world instead
-			final int MIN_OPPONENTS = 1, MAX_OPPONENTS = 1;
+			final int MIN_OPPONENTS = num, MAX_OPPONENTS = num;
 			Bundle autoMatchCriteria = RoomConfig.createAutoMatchCriteria(MIN_OPPONENTS,MAX_OPPONENTS, 0);
-
 			RoomConfig.Builder rtmConfigBuilder = RoomConfig.builder(mGooglePlayListeners);
 			rtmConfigBuilder.setMessageReceivedListener(this);
 			rtmConfigBuilder.setRoomStatusUpdateListener(mGooglePlayListeners);
+
 
 			rtmConfigBuilder.setAutoMatchCriteria(autoMatchCriteria);
 			Games.RealTimeMultiplayer.create(mGoogleApiClient, rtmConfigBuilder.build());
@@ -344,58 +350,52 @@ public class AndroidLauncher extends AndroidApplication implements GameHelperLis
 		byte[] bytes = message.getBytes(Charset.forName("UTF-8"));
 		for (Object o : MultiplayerSession.mParticipants) {
 			Participant p = (Participant) o;
-			if (!p.getParticipantId().equals(MultiplayerSession.mId)) {
+//			if (!p.getParticipantId().equals(MultiplayerSession.mId)) {
 				Games.RealTimeMultiplayer.sendReliableMessage(mGoogleApiClient, null, bytes,
 						MultiplayerSession.mRoomId, p.getParticipantId());
-			}
+//			}
 		}
 	}
 	public void BroadcastUnreliableMessage(String message){
 		byte[] bytes = message.getBytes(Charset.forName("UTF-8"));
+//		byte[] bytes = message.getBytes();
 		Games.RealTimeMultiplayer.sendUnreliableMessageToOthers(mGoogleApiClient, bytes,
 				MultiplayerSession.mRoomId);
+
+	}
+	public void MessagetoServer(String message){
+		byte[] bytes = message.getBytes(Charset.forName("UTF-8"));
+		Participant p = (Participant) MultiplayerSession.mParticipants.get(0);
+		Games.RealTimeMultiplayer.sendReliableMessage(mGoogleApiClient, null, bytes,
+				MultiplayerSession.mRoomId, p.getParticipantId());
+	}
+	public void MessagetoParticipant(int id, String message){
+		byte[] bytes = message.getBytes(Charset.forName("UTF-8"));
+		Participant p = (Participant) MultiplayerSession.mParticipants.get(id);
+		Games.RealTimeMultiplayer.sendReliableMessage(mGoogleApiClient, null, bytes,
+				MultiplayerSession.mRoomId, p.getParticipantId());
 	}
 
 	@Override
 	public void onRealTimeMessageReceived(RealTimeMessage rtm) {
 		byte[] buf = rtm.getMessageData();
-		String sender = rtm.getSenderParticipantId();
-		String Msg;
-		//testing
-		InputStream is = new ByteArrayInputStream(buf);
-		bufferedReader = new BufferedReader(new InputStreamReader(is));
-		//end
-		try{
-			String messageType = new String (Arrays.copyOfRange(buf, 0, 1),"UTF-8");
-			System.out.println("Listen to message: "+ new String (Arrays.copyOfRange(buf,0,buf.length),"UTF-8"));
-			Log.d(TAG, "MessageType: " + messageType);
-
-			if (messageType.equals("A")){
-				//Create a InetSocketAddress
-				byte[] addr = Arrays.copyOfRange(buf, 1, buf.length);
-				Msg = new String (addr,"UTF-8");
-				Log.d(TAG,"Address received: "+Msg);
-				MultiplayerSession.serverAddress=Msg;
-
-			}else if (messageType.equals("P")){
-				//Retrieve and store port number
-				byte[] port = Arrays.copyOfRange(buf, 1, buf.length);
-				Msg = new String (port,"UTF-8");
-				Log.d(TAG,"Port Number received: "+Msg);
-				MultiplayerSession.serverPort=Integer.parseInt(Msg);
-
-			}else{
-				Log.d(TAG, "Message type is not recognised.");
-			}
-
-		}catch (Exception e){
-			Log.d(TAG, "Error reading from received message: "+e.getMessage());
+		if (screen!=null) {
+			screen.MessageListener(buf);
 		}
+
 	}
 	@Override
-	public BufferedReader inputBuffer() {
-		return bufferedReader;
+	public void setScreen(PlayScreen screen) {
+		this.screen = screen;
 	}
 
-
+	@Override
+	public boolean checkhost() {
+		Participant p = (Participant) MultiplayerSession.mParticipants.get(0);
+		if (!p.isConnectedToRoom()){
+			return false;
+		} else {
+			return true;
+		}
+	}
 }

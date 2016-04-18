@@ -11,9 +11,11 @@ import java.util.ArrayList;
 public class MultiplayerSessionInfo {
 	
 	public String mId;
+	public int mId_num;
 	public String mIncomingInvitationId;
 	public String mRoomId;
 	public ArrayList mParticipants;
+	public ArrayList<String> mParticipantsId;
 	public String mName;
 	public int mState=1000;
 
@@ -26,25 +28,11 @@ public class MultiplayerSessionInfo {
 	public final int ROOM_WAIT=1001;
 	public final int ROOM_PLAY=1002;
 	public final int ROOM_MENU=1003;
+	public final int ROOM_LEADER=1004;
 	
 	public MultiplayerSessionInfo(){
 	}
 
-//	public MMServer getServer() {
-//		return server;
-//	}
-//
-//	public void setServer(MMServer server) {
-//		this.server = server;
-//	}
-//
-//	public MMClient getClient() {
-//		return client;
-//	}
-//
-//	public void setClient(MMClient client) {
-//		this.client = client;
-//	}
 	
 	public void endSession(){
 		mId=null;
@@ -57,9 +45,6 @@ public class MultiplayerSessionInfo {
 		isServer=false;
 		serverAddress=null;
 		serverPort=0;
-
-//		server=null;
-//		client=null;
 
 	}
 

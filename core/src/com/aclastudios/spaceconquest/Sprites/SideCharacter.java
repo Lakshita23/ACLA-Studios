@@ -216,6 +216,7 @@ public class SideCharacter extends Sprite{
     public boolean isDestroyed() {
         return destroyed;
     }
+
     public void updateEnemy(float x,float y, float angle,float radius,float xPercent,float yPercent,int actualFireCount, float xSpeed,float ySpeed, int IFCount){
         this.x=x;
         this.y=y;

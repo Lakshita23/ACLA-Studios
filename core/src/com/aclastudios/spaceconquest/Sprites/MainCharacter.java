@@ -34,10 +34,12 @@ public class MainCharacter extends Sprite {
     TiledMap map;
     protected Fixture fixture;
     private TextureRegion character;
+
     private int knapsackCount = 0;
     private int additionalWeight = 0;
     private int threshold = 5;
     private float defaultRadius = 13/ SpaceConquest.PPM;
+
     private float radius = 13/ SpaceConquest.PPM;
     private int charScore;
     private float playerHP = 20;
@@ -415,6 +417,7 @@ public class MainCharacter extends Sprite {
         radius=13/ SpaceConquest.PPM;
         this.additionalWeight = 0;
         this.knapsackCount = 0;
+
     }
 
     public boolean isDestroyed() {

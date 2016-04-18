@@ -18,7 +18,7 @@ public interface PlayServices {
 
     public void getAchievementsGPGS();
 
-    public void startQuickGame();
+    public void startQuickGame(int num);
 
     public void seeInvitations();
 

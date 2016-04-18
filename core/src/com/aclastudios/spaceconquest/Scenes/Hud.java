@@ -231,4 +231,11 @@ public class Hud implements Disposable {
         return kills;
     }
 
+    public int getRedScore(){
+        return RedScore;
+    }
+    public int getBlueScore(){
+        return BlueScore;
+    }
+
 }

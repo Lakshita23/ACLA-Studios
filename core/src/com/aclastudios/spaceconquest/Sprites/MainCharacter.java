@@ -34,10 +34,12 @@ public class MainCharacter extends Sprite {
     TiledMap map;
     protected Fixture fixture;
     private TextureRegion character;
+
     private int knapsackCount = 0;
     private int additionalWeight = 0;
     private int threshold = 10;
     private float defaultRadius = 13/ SpaceConquest.PPM;
+
     private float radius = 13/ SpaceConquest.PPM;
     private int charScore;
     private float playerHP = 20;
@@ -255,6 +257,14 @@ public class MainCharacter extends Sprite {
         return charScore;
     }
 
+//<<<<<<< HEAD
+//    public void addCharWeight(float charWeight) {
+//        this.charWeight += charWeight;
+//        Array<Fixture> fix = b2body.getFixtureList();
+//        Shape shape = fix.get(0).getShape();
+//        radius = (13 + (this.charWeight * scale * 7))/ SpaceConquest.PPM;
+//        shape.setRadius(radius);
+//=======
     public void increaseKnapSack(float charWeight) {
         knapsackCount++;
         if(knapsackCount > threshold) {
@@ -355,8 +365,12 @@ public class MainCharacter extends Sprite {
         oil_count = 0;
         setToDestroy = true;
         radius=13/ SpaceConquest.PPM;
+//<<<<<<< HEAD
+//        this.charWeight = 0;
+//=======
         this.additionalWeight = 0;
         this.knapsackCount = 0;
+
     }
 
     public boolean isDestroyed() {

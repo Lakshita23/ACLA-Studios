@@ -38,9 +38,7 @@ public class MenuScreen implements Screen {
     private TextButtonStyle style;
     private TextButton play;
     private TextButton login;
-    private TextButton logout;
-    private TextButton tutorial;
-    private TextButton story;
+    private TextButton instructions;
 
     private Image mute;
     private Image unmute;
@@ -55,24 +53,21 @@ public class MenuScreen implements Screen {
         BUTTON_HEIGHT = 20;
 
         style = new TextButtonStyle();  //can customize
-        style.font = new BitmapFont(Gdx.files.internal("fonts/visitor.fnt"));
+        style.font = new BitmapFont(Gdx.files.internal("fonts/fontin.fnt"));
         style.font.setColor(Color.BLUE);
-        style.font.getData().setScale(0.65f, 0.65f);
-        style.up= new TextureRegionDrawable(new TextureRegion(new Texture("basic/button_up.png")));
-        style.down= new TextureRegionDrawable(new TextureRegion(new Texture("basic/button_down.png")));
+        style.font.getData().setScale(0.2f, 0.2f);
+        style.up= new TextureRegionDrawable(new TextureRegion(new Texture("button/Button-notPressed2.png")));
+        style.down= new TextureRegionDrawable(new TextureRegion(new Texture("button/Button-Pressed2.png")));
 
 //        style.unpressedOffsetX = 5f;
 //        style.pressedOffsetX = style.unpressedOffsetX + 1f;
 //        style.pressedOffsetY = -1f;
+        play = new TextButton("START GAME",style);
+        login = new TextButton("LEADER BOARD", style);
+        instructions = new TextButton("HOW TO PLAY", style);
 
-        play = new TextButton("Play Game", style);
-        login = new TextButton("Login", style);
-        logout = new TextButton("Logout", style);
-        tutorial = new TextButton("Tutorial", style);
-        story = new TextButton("Quick Game", style);
-
-        mute = new Image(new TextureRegionDrawable(new TextureRegion(new Texture("basic/sound_on.png"))));
-        unmute = new Image(new TextureRegionDrawable(new TextureRegion(new Texture("basic/sound_off.png"))));
+        mute = new Image(new TextureRegionDrawable(new TextureRegion(new Texture("button/sound-on.png"))));
+        unmute = new Image(new TextureRegionDrawable(new TextureRegion(new Texture("button/sound-off.png"))));
 
         System.out.println("constructor");
         show();
@@ -89,37 +84,28 @@ public class MenuScreen implements Screen {
         //AssetLoader.menuMusic.play();
 
         batch = new SpriteBatch();
-        background = new Texture("basic/menu.png");
+        background = new Texture("screens/Screen2.png");
 
         background.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
         sprite = new Sprite(background);
         sprite.setSize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 
-        play.setSize(this.BUTTON_WIDTH, this.BUTTON_HEIGHT);
-        play.setPosition(300, 90);
+        play.setSize(this.BUTTON_WIDTH / 3 * 2, this.BUTTON_HEIGHT);
+        play.setPosition(300, 140);
         stage.addActor(play);
 
         login.setSize(this.BUTTON_WIDTH / 3 * 2, this.BUTTON_HEIGHT);
-        login.setPosition(300, 60);
-        logout.setSize(this.BUTTON_WIDTH / 3 * 2, this.BUTTON_HEIGHT);
-        logout.setPosition(300, 60);
-//        if (game.playServices.getSignedInGPGS()) {
-        if (true){
-            stage.addActor(logout);
-        } else {
-            stage.addActor(login);
-        }
+        login.setPosition(300, 100);
+        stage.addActor(login);
 
-        tutorial.setSize(this.BUTTON_WIDTH / 3 * 2, this.BUTTON_HEIGHT);
-        tutorial.setPosition(300, 30);
-        stage.addActor(tutorial);
+        instructions.setSize(this.BUTTON_WIDTH / 3 * 2, this.BUTTON_HEIGHT);
+        instructions.setPosition(300, 60);
+        stage.addActor(instructions);
 
-        story.setSize(this.BUTTON_WIDTH / 3 * 2, this.BUTTON_HEIGHT);
-        story.setPosition(300, 0);
-        stage.addActor(story);
-
-        mute.setPosition(0, 0);
-        unmute.setPosition(0, 100);
+        mute.setScale(0.4f, 0.4f);
+        mute.setPosition(3, 195);
+        unmute.setScale(0.4f,0.4f);
+        unmute.setPosition(3, 195);
         if (AssetLoader.VOLUME == 1) {
             stage.addActor(mute);
         } else {
@@ -147,32 +133,13 @@ public class MenuScreen implements Screen {
         login.addListener(new ClickListener() {
               @Override
             public void clicked(InputEvent event, float x, float y) {
-                game.playServices.loginGPGS();
-                login.remove();
-                stage.addActor(logout);
+                  game.multiplayerSessionInfo.mState = game.multiplayerSessionInfo.ROOM_LEADER;
+              gsm.set(new LeadersBoardScreen(game, gsm));
             }
         });
 
-        logout.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                game.playServices.logoutGPGS();
-                logout.remove();
-                stage.addActor(login);
-            }
-        });
 
-        tutorial.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                game.multiplayerSessionInfo.mState = game.multiplayerSessionInfo.ROOM_LEADER;
-                gsm.set(new LeadersBoardScreen(game, gsm));
-                // TODO Set to tutorial screen
-              //  gsm.set(new TutorialScreen(game, gsm));
-            }
-        });
-
-        story.addListener(new ClickListener() {
+        instructions.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 AssetLoader.clickSound.play(AssetLoader.VOLUME);

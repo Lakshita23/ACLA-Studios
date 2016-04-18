@@ -9,6 +9,7 @@ import com.aclastudios.spaceconquest.Sprites.MainCharacter;
 import com.aclastudios.spaceconquest.Sprites.ResourceManager;
 import com.aclastudios.spaceconquest.SupportThreads.Server;
 import com.aclastudios.spaceconquest.Tools.B2WorldCreator;
+import com.aclastudios.spaceconquest.Tools.Controller;
 import com.aclastudios.spaceconquest.Tools.HealthBar;
 import com.aclastudios.spaceconquest.Tools.WorldContactListener;
 import com.badlogic.gdx.Gdx;
@@ -48,7 +49,7 @@ import java.util.HashMap;
 **********************************declare number of players, first 3 players are team 1,
  */
 public class PlayScreen implements Screen {
-
+//    private Controller controller;
     private int userID;
     private String[] spriteName = {"PYRO", "DAACTAR"};
     private int numOfPlayers = 2;
@@ -62,6 +63,7 @@ public class PlayScreen implements Screen {
 
     private float rateOfFire = (float) 0.3;
     private float coolDown;
+    private float buffCoolDown=30;
 //    private Array<FireBall> networkFireballs;
 
     private float x;
@@ -86,6 +88,7 @@ public class PlayScreen implements Screen {
     private Table table;
     private ImageButton button;
     private ImageButton jetpack_Button;
+    private ImageButton buffMode_Button;
     private Label heading;
 
     private Touchpad touchpad;
@@ -187,14 +190,15 @@ public class PlayScreen implements Screen {
         //Create Drawable's from TouchPad skin
         touchBackground = touchpadSkin.getDrawable("touchBackground");
         touchKnob = touchpadSkin.getDrawable("touchKnob");
+//        touchKnob = touchpadSkin.getDrawable("touchBackground");
         //Apply the Drawables to the TouchPad Style
-        touchpadStyle.background = touchBackground;
+//        touchpadStyle.background = touchBackground;
         touchpadStyle.knob = touchKnob;
         //Create new TouchPad with the created style
         touchpad = new Touchpad(10/ SpaceConquest.PPM, touchpadStyle);
         //setBounds(x,y,width,height)
         touchpad.setBounds(0, 0, 70/SpaceConquest.PPM, 70/SpaceConquest.PPM);
-        //touchpad.setScale(1 / SpaceConquest.PPM);
+//        touchpad.setScale(1 / SpaceConquest.PPM);
 
         buttonsAtlas = new TextureAtlas("button/button.pack");
         buttonSkin = new Skin(buttonsAtlas);
@@ -209,15 +213,21 @@ public class PlayScreen implements Screen {
         button.setBounds(0,0,40/ SpaceConquest.PPM,40/ SpaceConquest.PPM);
         jetpack_Button = new ImageButton(new TextureRegionDrawable(new TextureRegion(orange)), new TextureRegionDrawable(new TextureRegion(red)));
         jetpack_Button.setBounds(0,0,40/ SpaceConquest.PPM,40/ SpaceConquest.PPM);
+        buffMode_Button = new ImageButton(new TextureRegionDrawable(new TextureRegion(orange)), new TextureRegionDrawable(new TextureRegion(red)));
+        buffMode_Button.setBounds(0,0,40/ SpaceConquest.PPM,40/ SpaceConquest.PPM);
         //table.add(button);
 
         //Create a Stage and add TouchPad
         stage = new Stage(gamePort, game.batch);
+
         stage.addActor(touchpad);
         stage.addActor(button);
         stage.addActor(jetpack_Button);
+        stage.addActor(buffMode_Button);
         Gdx.input.setInputProcessor(stage);
-
+//        controller = new Controller();
+//        controller.create();
+//        controller.createTouchPadController();
         //Setscreen in androidLauncher
         //uncomment this
         game.playServices.setScreen(this);
@@ -238,6 +248,7 @@ public class PlayScreen implements Screen {
 
     public void handleInput(float dt){
         coolDown +=dt;
+        buffCoolDown+=dt;
         if (button.isPressed() && coolDown >rateOfFire && mainCharacter.getAmmunition()>0) {
             coolDown = 0;
             //start of fire ball
@@ -266,6 +277,11 @@ public class PlayScreen implements Screen {
             mainCharacter.setySpeedPercent((float) (touchpad.getKnobPercentY()));
             mainCharacter.b2body.applyLinearImpulse(new Vector2((float)(mainCharacter.getxSpeedPercent() *2* speedreduction),
                     (float)(mainCharacter.getySpeedPercent() * 2 * speedreduction)), mainCharacter.b2body.getWorldCenter(), true);
+        }
+
+        if(buffMode_Button.isPressed()&& buffCoolDown >30 && !mainCharacter.isBuffMode()){
+            mainCharacter.defineBuffCharacter();
+            buffCoolDown =0;
         }
 
     }
@@ -305,7 +321,8 @@ public class PlayScreen implements Screen {
                                 Float.parseFloat(values[8]),
                                 Integer.parseInt(values[9]),
                                 Float.parseFloat(values[10]),
-                                Float.parseFloat(values[11]));
+                                Float.parseFloat(values[11]),
+                                Integer.parseInt(values[12]));
 //                  sideCharacter.setRotation(Float.parseFloat(values[3]));
                         if (values[4].equals("false")) {
                             sideCharacter.dead();
@@ -353,10 +370,11 @@ public class PlayScreen implements Screen {
         try {
             System.out.println("sending character's coordinate");
             game.playServices.BroadcastUnreliableMessage(userID + ":" + x + ":" + y + ":" + mainCharacter.getAngle() + ":" +
-                    String.valueOf(!mainCharacter.isDestroyed()) + ":" + mainCharacter.getAdditionalWeight() + ":" + mainCharacter.getHP() +
+                    String.valueOf(!mainCharacter.isDestroyed()) + ":" + (mainCharacter.isBuffMode()?mainCharacter.getBuffRadius():mainCharacter.getRadius())
+                    + ":" + mainCharacter.getHP() +
                     ":" + mainCharacter.getLastXPercent() + ":" + mainCharacter.getLastYPercent() + ":" +
                     mainCharacter.getFireCount() + ":" +mainCharacter.b2body.getLinearVelocity().x +
-                    ":"+mainCharacter.b2body.getLinearVelocity().y);
+                    ":"+mainCharacter.b2body.getLinearVelocity().y +":"+mainCharacter.getIFCount());
             System.out.println("finished sending character's coordinate");
 
         }catch (Exception e){
@@ -370,10 +388,11 @@ public class PlayScreen implements Screen {
 
         button.setPosition(gamecam.position.x + gamePort.getWorldWidth() / 4 + 40 / SpaceConquest.PPM, gamecam.position.y - gamePort.getWorldHeight() / 2 + 10 / SpaceConquest.PPM);
         jetpack_Button.setPosition(gamecam.position.x+gamePort.getWorldWidth() / 4 ,gamecam.position.y-gamePort.getWorldHeight()/2+10/ SpaceConquest.PPM);
-        touchpad.setPosition((gamecam.position.x-(gamePort.getWorldWidth() / 2)),
-                (gamecam.position.y-gamePort.getWorldHeight()/2));
-//        touchpad.setPosition((gamecam.position.x-(gamePort.getWorldWidth() / 2))+(10/ SpaceConquest.PPM),
-//                (gamecam.position.y-gamePort.getWorldHeight()/2)+(10/ SpaceConquest.PPM));
+        buffMode_Button.setPosition(gamecam.position.x+gamePort.getWorldWidth() / 4 + 20 / SpaceConquest.PPM,gamecam.position.y-gamePort.getWorldHeight()/2+30/ SpaceConquest.PPM);
+//        touchpad.setPosition((gamecam.position.x-(gamePort.getWorldWidth() / 2)),
+//                (gamecam.position.y-gamePort.getWorldHeight()/2));
+        touchpad.setPosition((gamecam.position.x-(gamePort.getWorldWidth() / 2))+(10/ SpaceConquest.PPM),
+                (gamecam.position.y-gamePort.getWorldHeight()/2)+(10/ SpaceConquest.PPM));
 
     }
     //render
@@ -403,8 +422,6 @@ public class PlayScreen implements Screen {
             game.batch.begin(); //opens the "box"
             game.batch.draw(mapTexture, 0, 0, (mapTexture.getWidth() * SpaceConquest.MAP_SCALE)/ SpaceConquest.PPM,
                     (mapTexture.getHeight() * SpaceConquest.MAP_SCALE)/ SpaceConquest.PPM);
-
-            mainCharacter.draw(game.batch);
 
             //Side Characters
             for (int i: enemyhashmap.keySet()) {
@@ -449,7 +466,7 @@ public class PlayScreen implements Screen {
 
 
             //render our Box2DDebugLines
-            b2dr.render(world, gamecam.combined);
+//            b2dr.render(world, gamecam.combined);
 
             //Join/Combine hud camera to game batch
             game.batch.setProjectionMatrix(hud.stage.getCamera().combined);
@@ -459,6 +476,7 @@ public class PlayScreen implements Screen {
             stage.act(Gdx.graphics.getDeltaTime());
             stage.draw();
 
+//            controller.render();
 
             if (hud.isTimeUp() == true) {
                 gsm.set(new GameOver(game, gsm));
@@ -631,6 +649,10 @@ public class PlayScreen implements Screen {
 
     public float getRateOfFire() {
         return rateOfFire;
+    }
+
+    public void setRateOfFire(float rateOfFire) {
+        this.rateOfFire = rateOfFire;
     }
 }
 

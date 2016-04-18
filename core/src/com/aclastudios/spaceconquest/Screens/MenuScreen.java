@@ -56,9 +56,6 @@ public class MenuScreen implements Screen {
         style.up= new TextureRegionDrawable(new TextureRegion(new Texture("button/Button-notPressed.png")));
         style.down= new TextureRegionDrawable(new TextureRegion(new Texture("button/Button-Pressed.png")));
 
-//        style.unpressedOffsetX = 5f;
-//        style.pressedOffsetX = style.unpressedOffsetX + 1f;
-//        style.pressedOffsetY = -1f;
         play = new TextButton("START GAME",style);
         leaderboard = new TextButton("LEADER BOARD", style);
         instructions = new TextButton("HOW TO PLAY", style);

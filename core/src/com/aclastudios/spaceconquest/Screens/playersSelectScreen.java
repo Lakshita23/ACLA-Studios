@@ -16,13 +16,13 @@ import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle;
 
-public class MenuScreen implements Screen {
+public class playersSelectScreen implements Screen {
     private Viewport viewport;
     private Stage stage;
     private GameScreenManager gsm;
@@ -36,47 +36,40 @@ public class MenuScreen implements Screen {
     private Sprite sprite;
 
     private TextButtonStyle style;
-    private TextButton play;
-    private TextButton login;
-    private TextButton instructions;
+    private TextButton play1;
+    private TextButton play2;
+    private TextButton play3;
 
-    private Image mute;
-    private Image unmute;
 
-    public MenuScreen(SpaceConquest game, GameScreenManager gsm){
+    public playersSelectScreen(SpaceConquest game, GameScreenManager gsm){
         this.gsm = gsm;
         this.game = game;
         viewport = new FitViewport(SpaceConquest.V_WIDTH, SpaceConquest.V_HEIGHT, new OrthographicCamera());
         stage = new Stage(viewport, (game).batch);
 
-        BUTTON_WIDTH = 160;
-        BUTTON_HEIGHT = 20;
+        BUTTON_WIDTH = 100;
+        BUTTON_HEIGHT = 150;
 
         style = new TextButtonStyle();  //can customize
         style.font = new BitmapFont(Gdx.files.internal("fonts/spaceAge.fnt"));
         style.font.setColor(Color.BLUE);
-        style.font.getData().setScale(0.3f, 0.3f);
-        style.up= new TextureRegionDrawable(new TextureRegion(new Texture("button/Button-notPressed2.png")));
-        style.down= new TextureRegionDrawable(new TextureRegion(new Texture("button/Button-Pressed2.png")));
+        style.font.getData().setScale(0.8f, 0.8f);
+        style.up= new TextureRegionDrawable(new TextureRegion(new Texture("basic/button_up.png")));
+        style.down= new TextureRegionDrawable(new TextureRegion(new Texture("basic/button_down.png")));
 
 //        style.unpressedOffsetX = 5f;
 //        style.pressedOffsetX = style.unpressedOffsetX + 1f;
 //        style.pressedOffsetY = -1f;
-        play = new TextButton("START GAME",style);
-        login = new TextButton("LEADER BOARD", style);
-        instructions = new TextButton("HOW TO PLAY", style);
 
-        mute = new Image(new TextureRegionDrawable(new TextureRegion(new Texture("button/sound-on.png"))));
-        unmute = new Image(new TextureRegionDrawable(new TextureRegion(new Texture("button/sound-off.png"))));
+        play1 = new TextButton("1 v 1", style);
+        play2 = new TextButton("2 v 2", style);
+        play3 = new TextButton("3 v 3", style);
 
-        System.out.println("constructor");
         show();
     }
 
     @Override
     public void show() {
-        // The elements are displayed in the order you add them.
-        // The first appear on top, the last at the bottom.
         if (AssetLoader.gameMusic != null) {
             AssetLoader.gameMusic.stop();
             AssetLoader.disposeSFX();
@@ -84,83 +77,62 @@ public class MenuScreen implements Screen {
         //AssetLoader.menuMusic.play();
 
         batch = new SpriteBatch();
-        background = new Texture("screens/Screen2.png");
+        background = new Texture("waitscreen.jpg");
 
         background.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
         sprite = new Sprite(background);
         sprite.setSize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 
-        play.setSize(this.BUTTON_WIDTH / 3 * 2, this.BUTTON_HEIGHT);
-        play.setPosition(270, 140);
-        stage.addActor(play);
+        play1.setSize(this.BUTTON_WIDTH, this.BUTTON_HEIGHT);
+        play1.setPosition(25, 25);
+        stage.addActor(play1);
 
-        login.setSize(this.BUTTON_WIDTH / 3 * 2, this.BUTTON_HEIGHT);
-        login.setPosition(270, 100);
-        stage.addActor(login);
+        play2.setSize(this.BUTTON_WIDTH, this.BUTTON_HEIGHT);
+        play2.setPosition(150, 25);
+        stage.addActor(play2);
 
-        instructions.setSize(this.BUTTON_WIDTH / 3 * 2, this.BUTTON_HEIGHT);
-        instructions.setPosition(270, 60);
-        stage.addActor(instructions);
+        play3.setSize(this.BUTTON_WIDTH, this.BUTTON_HEIGHT);
+        play3.setPosition(275, 25);
+        stage.addActor(play3);
 
-        mute.setScale(0.4f, 0.4f);
-        mute.setPosition(3, 195);
-        unmute.setScale(0.4f, 0.4f);
-        unmute.setPosition(3, 195);
-        if (AssetLoader.VOLUME == 1) {
-            stage.addActor(mute);
-        } else {
-            stage.addActor(unmute);
-        }
-
-
-        System.out.println("play");
-        play.addListener(new ClickListener() {
+        play1.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-            // AssetLoader.clickSound.play(AssetLoader.VOLUME);
-                gsm.set(new playersSelectScreen(game, gsm));
+                if (game.playServices.getSignedInGPGS()) {
+                    game.playServices.startQuickGame(1);
+                    game.multiplayerSessionInfo.mState = game.multiplayerSessionInfo.ROOM_WAIT;
+                    gsm.set(new WaitScreen(game, gsm));
+                } else {
+                    game.playServices.loginGPGS();
+                }
             }
         });
 
-        login.addListener(new ClickListener() {
-              @Override
-            public void clicked(InputEvent event, float x, float y) {
-                  game.multiplayerSessionInfo.mState = game.multiplayerSessionInfo.ROOM_LEADER;
-                  gsm.set(new LeadersBoardScreen(game, gsm));
-            }
-        });
-
-
-        instructions.addListener(new ClickListener() {
+        play2.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                AssetLoader.clickSound.play(AssetLoader.VOLUME);
-                // TODO Set to tutorial screen
-                //  gsm.set(new StoryScreen(game, gsm));
+                if (game.playServices.getSignedInGPGS()) {
+                    game.playServices.startQuickGame(3);
+                    game.multiplayerSessionInfo.mState = game.multiplayerSessionInfo.ROOM_WAIT;
+                    gsm.set(new WaitScreen(game, gsm));
+                } else {
+                    game.playServices.loginGPGS();
+                }
             }
         });
 
-        mute.addListener(new ClickListener() {
+        play3.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                AssetLoader.muteSFX();
-                mute.remove();
-                stage.addActor(unmute);
+                if (game.playServices.getSignedInGPGS()) {
+                    game.playServices.startQuickGame(5);
+                    game.multiplayerSessionInfo.mState = game.multiplayerSessionInfo.ROOM_WAIT;
+                    gsm.set(new WaitScreen(game, gsm));
+                } else {
+                    game.playServices.loginGPGS();
+                }
             }
-
         });
-
-        unmute.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                AssetLoader.unmuteSFX();
-                AssetLoader.clickSound.play(AssetLoader.VOLUME);
-                unmute.remove();
-                stage.addActor(mute);
-            }
-
-        });
-
 
         Gdx.input.setInputProcessor(stage);
     }

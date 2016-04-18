@@ -103,7 +103,8 @@ public class AssetLoader {
     }
 
     public static void loadMenuSfx() {
-        menuMusic = Gdx.audio.newMusic(Gdx.files.internal("bgm/MenuScreen Music.mp3"));
+        menuMusic = Gdx.audio.newMusic(Gdx.files.internal("menuMusic/!In-game.mp3"));
+        menuMusic.setVolume(1f);
         musicBox.add(menuMusic);
         menuMusic.setLooping(true);
 //        soundBox.add(clickSound = Gdx.audio.newSound(Gdx.files.internal("sfx/click.mp3")));

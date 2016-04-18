@@ -14,6 +14,7 @@ import com.aclastudios.spaceconquest.Tools.HealthBar;
 import com.aclastudios.spaceconquest.Tools.WorldContactListener;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -111,7 +112,13 @@ public class PlayScreen implements Screen {
     private Texture health;
     private Texture orange;
 
+    private  Music music;
     public PlayScreen(SpaceConquest game, GameScreenManager gsm){
+        // adding the music
+        music = Gdx.audio.newMusic(Gdx.files.internal("menuMusic/In-game.mp3"));
+        music.setLooping(false);
+        music.play();
+
         atlas = new TextureAtlas("sprite.txt");
         this.game = game;
         this.gsm = gsm;

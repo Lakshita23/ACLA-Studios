@@ -4,6 +4,7 @@ import com.aclastudios.spaceconquest.Helper.AssetLoader;
 import com.aclastudios.spaceconquest.SpaceConquest;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -23,6 +24,7 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle;
 
 public class MenuScreen implements Screen {
+    private Music menuMusic;
     private Viewport viewport;
     private Stage stage;
     private GameScreenManager gsm;
@@ -70,7 +72,11 @@ public class MenuScreen implements Screen {
         logout = new TextButton("Logout", style);
         tutorial = new TextButton("Tutorial", style);
         story = new TextButton("Quick Game", style);
-
+        // adding the music
+        menuMusic = Gdx.audio.newMusic(Gdx.files.internal("menuMusic/!in-game.mp3"));
+        menuMusic.setVolume(1f);
+        menuMusic.setLooping(false);
+        menuMusic.play();
         mute = new Image(new TextureRegionDrawable(new TextureRegion(new Texture("basic/sound_on.png"))));
         unmute = new Image(new TextureRegionDrawable(new TextureRegion(new Texture("basic/sound_off.png"))));
 

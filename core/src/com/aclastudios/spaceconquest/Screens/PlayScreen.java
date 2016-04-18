@@ -11,7 +11,6 @@ import com.aclastudios.spaceconquest.SupportThreads.Server;
 import com.aclastudios.spaceconquest.Tools.B2WorldCreator;
 import com.aclastudios.spaceconquest.Tools.HealthBar;
 import com.aclastudios.spaceconquest.Tools.WorldContactListener;
-import com.aclastudios.spaceconquest.Weapons.FireBall;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
@@ -194,7 +193,11 @@ public class PlayScreen implements Screen {
         //Create new TouchPad with the created style
         touchpad = new Touchpad(10/ SpaceConquest.PPM, touchpadStyle);
         //setBounds(x,y,width,height)
-        touchpad.setBounds((float)7.5, (float)7.5, 35, 35);
+
+
+
+        touchpad.setBounds(0, 0, 70/SpaceConquest.PPM, 70/SpaceConquest.PPM);
+
         //touchpad.setScale(1 / SpaceConquest.PPM);
 
         buttonsAtlas = new TextureAtlas("button/button.pack");
@@ -253,7 +256,8 @@ public class PlayScreen implements Screen {
             mainCharacter.fire();
         }
         else {
-            double speedreduction = Math.pow(0.9, mainCharacter.getCharWeight()*0.4);
+
+            double speedreduction = Math.pow(0.9, mainCharacter.getAdditionalWeight()*0.4);
             if(jetpack_Button.isPressed() && mainCharacter.getJetpack_time()>0.05){
                 mainCharacter.exhaustJetPack(dt);
                 speedreduction = 3;
@@ -304,7 +308,9 @@ public class PlayScreen implements Screen {
                                 Float.parseFloat(values[5]),
                                 Float.parseFloat(values[7]),
                                 Float.parseFloat(values[8]),
-                                Integer.parseInt(values[9]));
+                                Integer.parseInt(values[9]),
+                                Float.parseFloat(values[10]),
+                                Float.parseFloat(values[11]));
 //                  sideCharacter.setRotation(Float.parseFloat(values[3]));
                         if (values[4].equals("false")) {
                             sideCharacter.dead();
@@ -352,9 +358,10 @@ public class PlayScreen implements Screen {
         try {
             System.out.println("sending character's coordinate");
             game.playServices.BroadcastUnreliableMessage(userID + ":" + x + ":" + y + ":" + mainCharacter.getAngle() + ":" +
-                    String.valueOf(!mainCharacter.isDestroyed()) + ":" + mainCharacter.getCharWeight() + ":" + mainCharacter.getHP() +
+                    String.valueOf(!mainCharacter.isDestroyed()) + ":" + mainCharacter.getAdditionalWeight() + ":" + mainCharacter.getHP() +
                     ":" + mainCharacter.getLastXPercent() + ":" + mainCharacter.getLastYPercent() + ":" +
-                    mainCharacter.getFireCount());
+                    mainCharacter.getFireCount() + ":" +mainCharacter.b2body.getLinearVelocity().x +
+                    ":"+mainCharacter.b2body.getLinearVelocity().y);
             System.out.println("finished sending character's coordinate");
 
         }catch (Exception e){
@@ -379,11 +386,21 @@ public class PlayScreen implements Screen {
     public void render(float delta) {
         try {
             if (hud.isTimeUp() == true) {
-                game.playServices.submitScoreGPGS(hud.getkills());
+
+                int len = game.multiplayerSessionInfo.mParticipants.size();
+                int myId = game.multiplayerSessionInfo.mId_num;
+                int redScore = hud.getRedScore();
+                int blueScore = hud.getBlueScore();
+                int mykillScore = hud.getkills();
+                System.out.println("hud istimeup");
                 game.playServices.leaveRoom();
                 game.multiplayerSessionInfo.mState = game.multiplayerSessionInfo.ROOM_NULL;
-                gsm.set(new GameOver(game, gsm));
+                game.playServices.submitScoreGPGS(hud.getkills());
+                System.out.println("close gps");
+                game.multiplayerSessionInfo.mState = game.multiplayerSessionInfo.ROOM_MENU;
+                gsm.set(new GameOver(game, gsm, len, myId, redScore, blueScore, mykillScore));
                 dispose();
+
             }
 
             //make sure that everything is updated
@@ -399,8 +416,8 @@ public class PlayScreen implements Screen {
             renderer.render();
             game.batch.setProjectionMatrix(gamecam.combined);
             game.batch.begin(); //opens the "box"
-            game.batch.draw(mapTexture, 0, 0, (mapTexture.getWidth() * SpaceConquest.MAP_SCALE)/ SpaceConquest.PPM,
-                    (mapTexture.getHeight() * SpaceConquest.MAP_SCALE)/ SpaceConquest.PPM);
+            game.batch.draw(mapTexture, 0, 0, (mapTexture.getWidth() * SpaceConquest.MAP_SCALE) / SpaceConquest.PPM,
+                    (mapTexture.getHeight() * SpaceConquest.MAP_SCALE) / SpaceConquest.PPM);
 
             mainCharacter.draw(game.batch);
 
@@ -442,7 +459,7 @@ public class PlayScreen implements Screen {
             HealthBar healthBar = new HealthBar(new TextureRegion(health),mainCharacter);
             float hp = mainCharacter.getHP();
             healthBar.setWidth(hp);
-            healthBar.draw(game.batch,hp);
+            healthBar.draw(game.batch, hp);
             game.batch.end(); //close the "box" and draw it on the screen
 
 
@@ -453,22 +470,23 @@ public class PlayScreen implements Screen {
             game.batch.setProjectionMatrix(hud.stage.getCamera().combined);
             hud.stage.draw();
 
-            //Draw the touch pad
+            //Draw the touch pad and buttons
             stage.act(Gdx.graphics.getDeltaTime());
             stage.draw();
 
 
-
             if (userID==0){
                 System.out.println("updating time");
-                game.playServices.BroadcastUnreliableMessage("Time:" + hud.getTime());
+                try {
+                    game.playServices.BroadcastUnreliableMessage("Time:" + hud.getTime());
+                }catch (Exception e){}
             } else {
                 hud.setTime(time);
             }
 
         }catch (Exception e){
             System.out.println("error in render");
-            e.printStackTrace();
+            System.out.println(e.getMessage());
         }
     }
 
@@ -510,6 +528,7 @@ public class PlayScreen implements Screen {
         world.dispose();
         b2dr.dispose();
         hud.dispose();
+        stage.dispose();
     }
     public TextureAtlas getAtlas() {
         return atlas;
@@ -521,15 +540,12 @@ public class PlayScreen implements Screen {
         }
     }
 
-    public void increaseCharWeight(int w){
-        mainCharacter.addCharWeight(w);
-    }
 
-    public int depositResource(){
-        int res = mainCharacter.getCharWeight();
-        mainCharacter.depositResource();
-        return res;
-    }
+//    public void depositResource(){
+//        int res = mainCharacter.getAdditionalWeight();
+//        mainCharacter.depositResource();
+//        return res;
+//    }
 
     public void MessageListener(byte[] bytes){
 
@@ -541,69 +557,70 @@ public class PlayScreen implements Screen {
                 public void run() {
                     // Your crashing code here
 
-                if (data[0].equals("0") || data[0].equals("1") || data[0].equals("2")|| data[0].equals("3")|| data[0].equals("4")|| data[0].equals("5")) {
-                    System.out.println("received enemies's coordinate");
-                    String[] position = data.clone();
-                    positionvalues.put(Integer.parseInt(data[0]), position);
-                    System.out.println("finished updating ");
-                }
-                else if (data[0].equals("Serverpoints") && userID==0){
-                    System.out.println("received points update from other players");
-                    addscore(data[1], Integer.parseInt(data[2]));
-                    System.out.println(data[0]+":"+data[1]+":"+data[2]);
-                }
-                else if (data[0].equals("UpdateScoreAll")){
-                    System.out.println("received point update from server");
-                    Hud.updatescore(Integer.parseInt(data[1]), Integer.parseInt(data[2]));
-                }
-//                else if (data[0].equals("fire")){
-//                    FireBall f = new FireBall(this, Float.parseFloat(data[2]),
-//                            Float.parseFloat(data[3]), Float.parseFloat(data[4]), Float.parseFloat(data[5]),true);
-//                    networkFireballs.add(f);
-//                }
-                else if (data[0].equals("Time")){
-                    System.out.println("received time update");
-                    time = Integer.parseInt(data[1]);
-                }
-                else if (data[0].equals("Resources")){
-                    System.out.println("Data 1:"+data[1]);
-                    resourceManager.getResourceString(data[1]);
-                    resourceManager.generateResources();
-                }
-                else if (data[0].equals("Delete")){
-                    System.out.println("delete resource"+data[2]+" "+data[3]);
-                    if (data[1].equals("Iron"))
-                        resourceManager.delIron(Integer.parseInt(data[2]), Float.parseFloat(data[3]));
-                    else if (data[1].equals("GunPowder"))
-                        resourceManager.delGunPowder(Integer.parseInt(data[2]), Float.parseFloat(data[3]));
-                    else if (data[1].equals("Oil"))
-                        resourceManager.delOil(Integer.parseInt(data[2]), Float.parseFloat(data[3]));
-                }
-                else if (data[0].equals("Generate")) {
-                    System.out.println("generate resources" + data[1] +" "+data[2] + " "+data[3]);
-                    try {
-                        if (data[1].equals("Iron")) {
-                            System.out.println("generate iron");
-                            resourceManager.addIron(Float.parseFloat(data[2]), Float.parseFloat(data[3]));
-                        }
-                        else if (data[1].equals("GunPowder")) {
-                            System.out.println("generate gunpowder");
-                            resourceManager.addGunPowder(Float.parseFloat(data[2]), Float.parseFloat(data[3]));
-                        }
-                        else if (data[1].equals("Oil")) {
-                            System.out.println("generate oil");
-                            resourceManager.addOil(Float.parseFloat(data[2]), Float.parseFloat(data[3]));
-                        }
+
+            if (data[0].equals("0") || data[0].equals("1") || data[0].equals("2")|| data[0].equals("3")|| data[0].equals("4")|| data[0].equals("5")) {
+                System.out.println("received enemies's coordinate");
+                String[] position = data.clone();
+                positionvalues.put(Integer.parseInt(data[0]), position);
+                System.out.println("finished updating ");
+            }
+            else if (data[0].equals("Serverpoints") && userID==0){
+                System.out.println("received points update from other players");
+                addscore(data[1], Integer.parseInt(data[2]));
+                System.out.println(data[0]+":"+data[1]+":"+data[2]);
+            }
+            else if (data[0].equals("UpdateScoreAll")){
+                System.out.println("received point update from server");
+                Hud.updatescore(Integer.parseInt(data[1]), Integer.parseInt(data[2]));
+            }
+//            else if (data[0].equals("fire")){
+//                FireBall f = new FireBall(this, Float.parseFloat(data[2]),
+//                        Float.parseFloat(data[3]), Float.parseFloat(data[4]), Float.parseFloat(data[5]),true);
+//                networkFireballs.add(f);
+//            }
+            else if (data[0].equals("Time")){
+                System.out.println("received time update");
+                time = Integer.parseInt(data[1]);
+            }
+            else if (data[0].equals("Resources")){
+                System.out.println("Data 1:"+data[1]);
+                resourceManager.getResourceString(data[1]);
+                resourceManager.generateResources();
+            }
+            else if (data[0].equals("Delete")){
+                System.out.println("delete resource"+data[2]+" "+data[3]);
+                if (data[1].equals("Iron"))
+                    resourceManager.delIron(Integer.parseInt(data[2]), Float.parseFloat(data[3]));
+                else if (data[1].equals("GunPowder"))
+                    resourceManager.delGunPowder(Integer.parseInt(data[2]), Float.parseFloat(data[3]));
+                else if (data[1].equals("Oil"))
+                    resourceManager.delOil(Integer.parseInt(data[2]), Float.parseFloat(data[3]));
+            }
+            else if (data[0].equals("Generate")) {
+                System.out.println("generate resources" + data[1] +" "+data[2] + " "+data[3]);
+                try {
+                    if (data[1].equals("Iron")) {
+                        System.out.println("generate iron");
+                        resourceManager.addIron(Float.parseFloat(data[2]), Float.parseFloat(data[3]));
                     }
-                    catch (Exception e){
-                        System.out.println("resource crash");
-                        e.printStackTrace();
+                    else if (data[1].equals("GunPowder")) {
+                        System.out.println("generate gunpowder");
+                        resourceManager.addGunPowder(Float.parseFloat(data[2]), Float.parseFloat(data[3]));
+                    }
+                    else if (data[1].equals("Oil")) {
+                        System.out.println("generate oil");
+                        resourceManager.addOil(Float.parseFloat(data[2]), Float.parseFloat(data[3]));
                     }
                 }
-                else if (data[0].equals("KillBonus")){
-                    hud.addkill();
+                catch (Exception e){
+                    System.out.println("resource crash");
+                    e.printStackTrace();
                 }
-                    }
+            }
+            else if (data[0].equals("KillBonus")){
+                hud.addkill();
+            }
+                }
             });
 
         } catch (Exception e) {

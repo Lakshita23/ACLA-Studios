@@ -114,11 +114,8 @@ public class Hud implements Disposable {
 //            Label divider = new Label(" | ", new Label.LabelStyle(new BitmapFont(Gdx.files.internal("fonts/visitor.fnt"), false), Color.WHITE));
 
             // Global data
-            time  =new Label(String.format("time: %3d \nKnapsack: %3d", worldTimer, teamKnapsack), new Label.LabelStyle(new BitmapFont(Gdx.files.internal("fonts/visitor.fnt"), false), Color.WHITE));
+            time  =new Label(String.format("time: %3d \nKnapsack: %3d/10", worldTimer, teamKnapsack), new Label.LabelStyle(new BitmapFont(Gdx.files.internal("fonts/visitor.fnt"), false), Color.WHITE));
 //            countdownLabel = new Label(String.format("%03d", worldTimer), new Label.LabelStyle(new BitmapFont(Gdx.files.internal("fonts/visitor.fnt"), false), Color.WHITE));
-            Label knapsack = new Label(String.format("Knapsack: %3d", teamKnapsack), new Label.LabelStyle(new BitmapFont(Gdx.files.internal("fonts/visitor.fnt"), false), Color.WHITE));
-//            Label knapsackLabel = new Label(String.format("%03d", teamKnapsack), new Label.LabelStyle(new BitmapFont(Gdx.files.internal("fonts/visitor.fnt"), false), Color.WHITE));
-
 
             // scalings
             resourcesLabel.setFontScale(smallScale / 2);
@@ -175,7 +172,7 @@ public class Hud implements Disposable {
                 if (backuphud) {
                     countdownLabel.setText(String.format("%03d", worldTimer));
                 } else {
-                    time.setText(String.format("time: %3d \nKnapsack: %3d", worldTimer, teamKnapsack));
+                    time.setText(String.format("time: %3d \nKnapsack: %3d/10", worldTimer, teamKnapsack));
                     resourcesLabel.setText(String.format("oil: %2d gp: %2d iron: %2d\nAmmo: %03d Jet Pack: %.1f\nKills: %3d", oilScore, gunpowderScore, ironScore, ammunition, jetpackTime,kills));
                 }
 //            gadgetsLabel.setText(String.format("Ammunition: %-3d Boost Time: %.1f", ammunition, jetpackTime));
@@ -190,7 +187,7 @@ public class Hud implements Disposable {
             if (backuphud) {
                 countdownLabel.setText(String.format("%03d", worldTimer));
             } else {
-                time.setText(String.format("time: %3d \nKnapsack: %3d", worldTimer, teamKnapsack));
+                time.setText(String.format("time: %3d \nKnapsack: %3d/10", worldTimer, teamKnapsack));
                 resourcesLabel.setText(String.format("oil: %2d gp: %2d iron: %2d\nAmmo: %03d Jet Pack: %.1f\nKills: %3d", oilScore, gunpowderScore, ironScore, ammunition, jetpackTime,kills));
             }
         }
@@ -232,6 +229,13 @@ public class Hud implements Disposable {
     }
     public int getkills(){
         return kills;
+    }
+
+    public int getRedScore(){
+        return RedScore;
+    }
+    public int getBlueScore(){
+        return BlueScore;
     }
 
 }

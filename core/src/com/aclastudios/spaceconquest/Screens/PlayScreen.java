@@ -193,7 +193,11 @@ public class PlayScreen implements Screen {
         //Create new TouchPad with the created style
         touchpad = new Touchpad(10/ SpaceConquest.PPM, touchpadStyle);
         //setBounds(x,y,width,height)
+
+
+
         touchpad.setBounds(0, 0, 70/SpaceConquest.PPM, 70/SpaceConquest.PPM);
+
         //touchpad.setScale(1 / SpaceConquest.PPM);
 
         buttonsAtlas = new TextureAtlas("button/button.pack");
@@ -252,6 +256,7 @@ public class PlayScreen implements Screen {
             mainCharacter.fire();
         }
         else {
+
             double speedreduction = Math.pow(0.9, mainCharacter.getAdditionalWeight()*0.4);
             if(jetpack_Button.isPressed() && mainCharacter.getJetpack_time()>0.05){
                 mainCharacter.exhaustJetPack(dt);
@@ -381,9 +386,9 @@ public class PlayScreen implements Screen {
     public void render(float delta) {
         try {
             if (hud.isTimeUp() == true) {
+
                 int len = game.multiplayerSessionInfo.mParticipants.size();
                 int myId = game.multiplayerSessionInfo.mId_num;
-                String myName = game.multiplayerSessionInfo.mName;
                 int redScore = hud.getRedScore();
                 int blueScore = hud.getBlueScore();
                 int mykillScore = hud.getkills();
@@ -392,8 +397,10 @@ public class PlayScreen implements Screen {
                 game.multiplayerSessionInfo.mState = game.multiplayerSessionInfo.ROOM_NULL;
                 game.playServices.submitScoreGPGS(hud.getkills());
                 System.out.println("close gps");
-                gsm.set(new GameOver(game, gsm, len, myId, myName, redScore, blueScore, mykillScore));
+                game.multiplayerSessionInfo.mState = game.multiplayerSessionInfo.ROOM_MENU;
+                gsm.set(new GameOver(game, gsm, len, myId, redScore, blueScore, mykillScore));
                 dispose();
+
             }
 
             //make sure that everything is updated
@@ -409,8 +416,8 @@ public class PlayScreen implements Screen {
             renderer.render();
             game.batch.setProjectionMatrix(gamecam.combined);
             game.batch.begin(); //opens the "box"
-            game.batch.draw(mapTexture, 0, 0, (mapTexture.getWidth() * SpaceConquest.MAP_SCALE)/ SpaceConquest.PPM,
-                    (mapTexture.getHeight() * SpaceConquest.MAP_SCALE)/ SpaceConquest.PPM);
+            game.batch.draw(mapTexture, 0, 0, (mapTexture.getWidth() * SpaceConquest.MAP_SCALE) / SpaceConquest.PPM,
+                    (mapTexture.getHeight() * SpaceConquest.MAP_SCALE) / SpaceConquest.PPM);
 
             mainCharacter.draw(game.batch);
 
@@ -468,12 +475,11 @@ public class PlayScreen implements Screen {
             stage.draw();
 
 
-//            if (hud.isTimeUp() == true) {
-//                gsm.set(new GameOver(game, gsm));
-//            }
             if (userID==0){
                 System.out.println("updating time");
-                game.playServices.BroadcastUnreliableMessage("Time:" + hud.getTime());
+                try {
+                    game.playServices.BroadcastUnreliableMessage("Time:" + hud.getTime());
+                }catch (Exception e){}
             } else {
                 hud.setTime(time);
             }
@@ -522,6 +528,7 @@ public class PlayScreen implements Screen {
         world.dispose();
         b2dr.dispose();
         hud.dispose();
+        stage.dispose();
     }
     public TextureAtlas getAtlas() {
         return atlas;
@@ -549,6 +556,7 @@ public class PlayScreen implements Screen {
                 @Override
                 public void run() {
                     // Your crashing code here
+
 
             if (data[0].equals("0") || data[0].equals("1") || data[0].equals("2")|| data[0].equals("3")|| data[0].equals("4")|| data[0].equals("5")) {
                 System.out.println("received enemies's coordinate");

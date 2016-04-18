@@ -222,11 +222,17 @@ public class ResourceManager {
         game.playServices.BroadcastMessage("Generate:GunPowder:"+gp.getX()+":"+gp.getY());
     }
     public void delGunPowder(int n, float dt){
+
+        System.out.println("deleting GP");
         GunPowder gp = gunpowder_array.get(n);
         gp.destroy();
+        System.out.println("deleted GP");
         gp.update(dt);
+        System.out.println("removing GP");
         gunpowder_array.remove(n);
+        System.out.println("removed GP");
         gunpowder_count--;
+
     }
     public void updateOil(float dt){
         for (int n=0; n<oil_array.size();n++){

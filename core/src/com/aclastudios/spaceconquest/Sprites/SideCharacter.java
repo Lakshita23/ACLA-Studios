@@ -246,7 +246,7 @@ public class SideCharacter extends Sprite{
         else
             fireCount+=1;
         float[] s = {b2body.getPosition().x,b2body.getPosition().y};
-        FireBall f = new FireBall(screen, s[0], s[1], lastXPercent, lastYPercent,radius,true,enemyID,imbaOrNot,null);
+        FireBall f = new FireBall(screen, s[0], s[1], lastXPercent, lastYPercent,radius,true,enemyID,imbaOrNot);
         fireballs.add(f);
 //        System.out.println("ammunition left: "+ ammunition);
         return s;

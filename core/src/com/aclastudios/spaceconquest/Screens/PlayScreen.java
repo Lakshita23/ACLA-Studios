@@ -141,7 +141,7 @@ public class PlayScreen implements Screen {
         numOfPlayers =  game.multiplayerSessionInfo.mParticipants.size();
         game.multiplayerSessionInfo.mId_num=this.userID;
         //Background and Character assets
-        mapTexture = new Texture("map.png");
+        mapTexture = new Texture("map/map_spaceship.png");
         //Game map and Game View
         //camera of the map
         gamecam  = new OrthographicCamera();
@@ -153,7 +153,7 @@ public class PlayScreen implements Screen {
 
         //Load our map and setup our map renderer
         maploader = new TmxMapLoader();
-        map = maploader.load("map-orthogonal.tmx");
+        map = maploader.load("map/map-orthogonal_2.tmx");
         renderer = new OrthogonalTiledMapRenderer(map,1/ SpaceConquest.PPM);
         gamecam.position.set(gamePort.getWorldWidth() / 2, gamePort.getWorldHeight() / 2, 0);
 

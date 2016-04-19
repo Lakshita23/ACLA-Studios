@@ -19,6 +19,7 @@ public class MultiplayerSessionInfo {
 	public String mName;
 	public int mState=1000;
 
+
 	public boolean isServer;
 	public String serverAddress;
 	public int serverPort=0;

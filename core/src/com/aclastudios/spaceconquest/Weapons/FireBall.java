@@ -1,8 +1,11 @@
 package com.aclastudios.spaceconquest.Weapons;
 
+import com.aclastudios.spaceconquest.Helper.AssetLoader;
 import com.aclastudios.spaceconquest.Screens.PlayScreen;
 import com.aclastudios.spaceconquest.SpaceConquest;
 import com.aclastudios.spaceconquest.Sprites.Space;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
@@ -31,7 +34,8 @@ public class FireBall extends Sprite {
     float distance;
     Body b2body;
     int firerID;
-    public FireBall(PlayScreen screen, float x, float y, float xSpd,float ySpd,float radius, boolean enemyFire, int firerID, boolean imba){
+    Sound sound;
+    public FireBall(PlayScreen screen, float x, float y, float xSpd,float ySpd,float radius, boolean enemyFire, int firerID, boolean imba, Sound sound){
         this.xSpd = xSpd;
         this.ySpd = ySpd;
         this.screen = screen;
@@ -39,6 +43,7 @@ public class FireBall extends Sprite {
         this.enemyFire = enemyFire;
         this.firerID = firerID;
         this.distance = radius;
+        this.sound = sound;
         frames = new Array<TextureRegion>();
         fb=new TextureAtlas("Mario_and_Enemies.pack").findRegion("fireball");
         for(int i = 0; i < 4; i++){
@@ -57,6 +62,10 @@ public class FireBall extends Sprite {
     }
 
     public void defineFireBall(){
+        if (sound!=null){
+            long id = sound.play(1.0f);
+            sound.setVolume(id,0.2f);
+        }
         BodyDef bdef = new BodyDef();
         bdef.position.set(getX() + (this.xSpd *(distance))/ SpaceConquest.PPM, getY() + (this.ySpd*distance)/ SpaceConquest.PPM);
         bdef.type = BodyDef.BodyType.DynamicBody;
@@ -118,7 +127,7 @@ public class FireBall extends Sprite {
         setPosition(b2body.getPosition().x - getWidth() / 2, b2body.getPosition().y - getHeight() / 2);
         if((stateTime > 3 || setToDestroy) && !destroyed) {
             world.destroyBody(b2body);
-
+//            sound.disposed;
             destroyed = true;
         }
 //        if(b2body.getLinearVelocity().y > 2f)

@@ -3,6 +3,8 @@ package com.aclastudios.spaceconquest.Sprites;
 import com.aclastudios.spaceconquest.Screens.PlayScreen;
 import com.aclastudios.spaceconquest.SpaceConquest;
 import com.aclastudios.spaceconquest.Weapons.FireBall;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.Sprite;
@@ -244,7 +246,7 @@ public class SideCharacter extends Sprite{
         else
             fireCount+=1;
         float[] s = {b2body.getPosition().x,b2body.getPosition().y};
-        FireBall f = new FireBall(screen, s[0], s[1], lastXPercent, lastYPercent,radius,true,enemyID,imbaOrNot);
+        FireBall f = new FireBall(screen, s[0], s[1], lastXPercent, lastYPercent,radius,true,enemyID,imbaOrNot,null);
         fireballs.add(f);
 //        System.out.println("ammunition left: "+ ammunition);
         return s;

@@ -8,7 +8,7 @@ import com.aclastudios.spaceconquest.Sprites.SideCharacter;
 import com.aclastudios.spaceconquest.Sprites.MainCharacter;
 import com.aclastudios.spaceconquest.Sprites.ResourceManager;
 import com.aclastudios.spaceconquest.Sprites.Space;
-import com.aclastudios.spaceconquest.SupportThreads.Server;
+import com.aclastudios.spaceconquest.Scores.Server;
 import com.aclastudios.spaceconquest.Tools.B2WorldCreator;
 import com.aclastudios.spaceconquest.Tools.HealthBar;
 import com.aclastudios.spaceconquest.Tools.WorldContactListener;

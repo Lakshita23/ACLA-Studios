@@ -22,11 +22,12 @@ public class AssetLoader {
     public static String[] images;
 
     public static void loadTutorialScreen(){
-        images = new String[5];
-        images[0] = new String("tutorial/img1.png");
-        images[1] = new String("tutorial/img2.png");
-        images[2] = new String("tutorial/img3.png");
-        images[3] = new String("tutorial/img4.png");
-        images[4] = new String("tutorial/img5.png");
+        images = new String[6];
+        images[0] = new String("tutorial/1.png");
+        images[1] = new String("tutorial/2.png");
+        images[2] = new String("tutorial/3.png");
+        images[3] = new String("tutorial/4.png");
+        images[4] = new String("tutorial/5.png");
+        images[5] = new String("tutorial/6.png");
     }
 }

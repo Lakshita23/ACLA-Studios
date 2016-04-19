@@ -64,10 +64,14 @@ public class MenuScreen implements Screen {
         }
 
         // adding the music
-        menuMusic = Gdx.audio.newMusic(Gdx.files.internal("menuMusic/!in-game.mp3"));
-        menuMusic.setVolume(1f);
-        menuMusic.setLooping(false);
-        menuMusic.play();
+        if (menuMusic==null) {
+            menuMusic = Gdx.audio.newMusic(Gdx.files.internal("menuMusic/!in-game.mp3"));
+        }
+        if (!menuMusic.isPlaying()) {
+            menuMusic.setVolume(1f);
+            menuMusic.setLooping(false);
+            menuMusic.play();
+        }
         play = new TextButton("START GAME",style);
         leaderboard = new TextButton("LEADER BOARD", style);
         instructions = new TextButton("HOW TO PLAY", style);

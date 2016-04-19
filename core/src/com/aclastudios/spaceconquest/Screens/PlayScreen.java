@@ -124,6 +124,7 @@ public class PlayScreen implements Screen {
         music = Gdx.audio.newMusic(Gdx.files.internal("menuMusic/In-game.mp3"));
         music.setLooping(false);
         music.play();
+
         boostSound = Gdx.audio.newMusic(Gdx.files.internal("sounds/boost.wav"));
 
 

@@ -81,6 +81,7 @@ public class TutorialScreen implements Screen {
         next.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
+
                 if (count<5) {
                     count++;
                     background = new Texture(AssetLoader.images[count]);

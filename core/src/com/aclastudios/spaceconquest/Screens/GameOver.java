@@ -4,6 +4,7 @@ import com.aclastudios.spaceconquest.Helper.AssetLoader;
 import com.aclastudios.spaceconquest.SpaceConquest;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -46,10 +47,19 @@ public class GameOver implements Screen {
     private Label myScore;
     private Label oppScore;
 
+    public static Music gameoverMusic;
+
 
     public GameOver(SpaceConquest game, GameScreenManager gsm, int len, int myId, int redScore, int blueScore, int mykillScore){
         this.gsm = gsm;
         this.game = game;
+
+        // adding the music
+        gameoverMusic = Gdx.audio.newMusic(Gdx.files.internal("sounds/gameoverMusic.mp3"));
+        gameoverMusic.setVolume(1f);
+        gameoverMusic.setLooping(false);
+        gameoverMusic.play();
+
         viewport = new FitViewport(SpaceConquest.V_WIDTH, SpaceConquest.V_HEIGHT, new OrthographicCamera());
         stage = new Stage(viewport, (game).batch);
 
@@ -85,7 +95,7 @@ public class GameOver implements Screen {
         }
         if (myTeam.equals("BLUE")){
             if (redScore<blueScore)
-                winLose = "Congrats Red Team, you WON!!!";
+                winLose = "Congrats Blue Team, you WON!!!";
             else if (redScore>blueScore)
                 winLose = "Sorry, you LOST";
             else
@@ -114,14 +124,12 @@ public class GameOver implements Screen {
     @Override
     public void show() {
         batch = new SpriteBatch();
-        background = new Texture("gameover.jpg");
+        background = new Texture("gameover3.png");
 
         background.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
         sprite = new Sprite(background);
         sprite.setSize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 
-
-        //
         System.out.println("add actors");
         winLosetext.setSize(this.BUTTON_WIDTH * 2, this.BUTTON_HEIGHT);
         winLosetext.setPosition(SpaceConquest.V_WIDTH/2-this.BUTTON_WIDTH/2-10, 150);
@@ -150,6 +158,8 @@ public class GameOver implements Screen {
         mainBtn.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
+                gameoverMusic.stop();
+                gameoverMusic.dispose();
                 game.multiplayerSessionInfo.mState = game.multiplayerSessionInfo.ROOM_MENU;
                 gsm.set(new MenuScreen(game, gsm));
             }

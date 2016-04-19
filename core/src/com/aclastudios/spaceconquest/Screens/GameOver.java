@@ -53,7 +53,7 @@ public class GameOver implements Screen {
         viewport = new FitViewport(SpaceConquest.V_WIDTH, SpaceConquest.V_HEIGHT, new OrthographicCamera());
         stage = new Stage(viewport, (game).batch);
 
-        BUTTON_WIDTH = 160;
+        BUTTON_WIDTH = 120;
         BUTTON_HEIGHT = 20;
 
         style1 = new Label.LabelStyle();
@@ -64,7 +64,7 @@ public class GameOver implements Screen {
         style = new TextButtonStyle();  //can customize
         style.font = new BitmapFont(Gdx.files.internal("fonts/spaceAge.fnt.fnt"));
         style.font.setColor(Color.BLUE);
-        style.font.getData().setScale(0.3f, 0.3f);
+        style.font.getData().setScale(0.2f, 0.2f);
         style.up= new TextureRegionDrawable(new TextureRegion(new Texture("basic/button_up.png")));
         style.down= new TextureRegionDrawable(new TextureRegion(new Texture("basic/button_down.png")));
 

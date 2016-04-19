@@ -139,7 +139,7 @@ public class PlayScreen implements Screen {
         numOfPlayers =  game.multiplayerSessionInfo.mParticipants.size();
         game.multiplayerSessionInfo.mId_num=this.userID;
         //Background and Character assets
-        mapTexture = new Texture("map.png");
+        mapTexture = new Texture("map/map_spaceship.png");
         //Game map and Game View
         //camera of the map
         gamecam  = new OrthographicCamera();
@@ -151,7 +151,7 @@ public class PlayScreen implements Screen {
 
         //Load our map and setup our map renderer
         maploader = new TmxMapLoader();
-        map = maploader.load("map-orthogonal.tmx");
+        map = maploader.load("map/map-orthogonal_2.tmx");
         renderer = new OrthogonalTiledMapRenderer(map,1/ SpaceConquest.PPM);
         gamecam.position.set(gamePort.getWorldWidth() / 2, gamePort.getWorldHeight() / 2, 0);
 
@@ -646,7 +646,8 @@ public class PlayScreen implements Screen {
                     else if (data[0].equals("Resources")){
                         System.out.println("Data 1:" + data[1]);
                         if (data[1].length()<21){
-                            game.playServices.BroadcastMessage("ResendR");
+                            System.out.println("req resend");
+                            game.playServices.BroadcastMessage("ResendR:");
                         }
                         else {
                             resourceManager.getResourceString(data[1]);
@@ -654,9 +655,10 @@ public class PlayScreen implements Screen {
                         }
                     }
                     else if (data[0].equals("ResendR")){
-                        if (userID==0){
-                            game.playServices.BroadcastMessage("Resources:"+resourceManager.coordinatesR());
+                        if (getServerID()==getUserID()){
+                            resourceManager.broadcastResources();
                         }
+
                     }
                     else if (data[0].equals("Delete")){
                         System.out.println("delete resource"+data[2]+" "+data[3]);

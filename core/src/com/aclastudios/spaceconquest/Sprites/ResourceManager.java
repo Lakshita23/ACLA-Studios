@@ -75,6 +75,9 @@ public class ResourceManager {
         System.out.println("Broadcast msg: "+allres);
     }
 
+    public void broadcastResources(){
+        game.playServices.BroadcastMessage("Resources:" + coordinatesR());
+    }
     public void generateResources(){
         if (userID==0){
             Random rand = new Random();
@@ -84,13 +87,17 @@ public class ResourceManager {
                 generateGunPowder(rand);
             while (oil_count<7)
                 generateOil(rand);
-            game.playServices.BroadcastMessage("Resources:" + coordinatesR());
+            broadcastResources();
 
         }
         else{
             try {
                 System.out.println("in generate resources for player");
                 System.out.println("Allres: "+allres);
+                if (allres.length()<21){
+                    System.out.println("request resource from rm");
+                    game.playServices.BroadcastMessage("ResendR:R");
+                }
                 String[] igo = allres.split("R");
                 String[] irons = igo[1].split(",");
                 String[] gunps = igo[2].split(",");

@@ -58,6 +58,11 @@ public class MenuScreen implements Screen {
         style.up= new TextureRegionDrawable(new TextureRegion(new Texture("button/Button-notPressed.png")));
         style.down= new TextureRegionDrawable(new TextureRegion(new Texture("button/Button-Pressed.png")));
 
+        if (GameOver.gameoverMusic!=null){
+            GameOver.gameoverMusic.stop();
+            GameOver.gameoverMusic.dispose();
+        }
+
         // adding the music
         menuMusic = Gdx.audio.newMusic(Gdx.files.internal("menuMusic/!in-game.mp3"));
         menuMusic.setVolume(1f);

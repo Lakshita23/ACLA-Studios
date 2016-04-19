@@ -15,6 +15,7 @@ import com.aclastudios.spaceconquest.Tools.WorldContactListener;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -117,12 +118,16 @@ public class PlayScreen implements Screen {
     private Texture health;
     private Texture orange;
 
-    private  Music music;
+    private Music music;
+    private Music boostSound;
+
     public PlayScreen(SpaceConquest game, GameScreenManager gsm){
         // adding the music
         music = Gdx.audio.newMusic(Gdx.files.internal("menuMusic/In-game.mp3"));
         music.setLooping(false);
         music.play();
+        boostSound = Gdx.audio.newMusic(Gdx.files.internal("sounds/boost.wav"));
+
 
         atlas = new TextureAtlas("sprites/sprite.txt");
         this.game = game;
@@ -298,8 +303,12 @@ public class PlayScreen implements Screen {
                 mainCharacter.setBoostPressed(true);
                 mainCharacter.exhaustJetPack(dt);
                 speedreduction = 3;
+                if (!boostSound.isPlaying()) {
+                    boostSound.play();
+                }
             }
             else {
+                boostSound.stop();
                 mainCharacter.setBoostPressed(false);
                 //friction
                 mainCharacter.b2body.applyLinearImpulse(new Vector2((float) (mainCharacter.b2body.getLinearVelocity().x * -0.03),
@@ -440,7 +449,7 @@ public class PlayScreen implements Screen {
     //render
     @Override
     public void render(float delta) {
-//        try {
+        try {
             if (hud.isTimeUp() == true) {
                 music.stop();
                 int len = game.multiplayerSessionInfo.mParticipants.size();
@@ -539,10 +548,10 @@ public class PlayScreen implements Screen {
                 hud.setTime(time);
             }
 
-//        }catch (Exception e){
-//            System.out.println("error in render");
-//            System.out.println(e.getMessage());
-//        }
+        }catch (Exception e){
+            System.out.println("error in render");
+            System.out.println(e.getMessage());
+        }
     }
 
     @Override

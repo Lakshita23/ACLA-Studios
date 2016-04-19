@@ -1,5 +1,6 @@
 package com.aclastudios.spaceconquest.Sprites;
 
+import com.aclastudios.spaceconquest.Scenes.Hud;
 import com.aclastudios.spaceconquest.Screens.PlayScreen;
 import com.aclastudios.spaceconquest.SpaceConquest;
 import com.aclastudios.spaceconquest.Weapons.FireBall;
@@ -60,11 +61,13 @@ public class MainCharacter extends Sprite {
     private float deathCount;
 
     // for animating the sprite
-    private enum State { STANDING, RUNNING };
+    private boolean boostPressed = false;
+    private enum State { STANDING, RUNNING, DASHING };
     private State currentState;
     private State previousState;
     private boolean buffMode = false;
     private Animation running;
+    private Animation dashing;
     private float stateTimer;
     private float buffTimer;
     private int buffoutTime = 10;
@@ -116,10 +119,18 @@ public class MainCharacter extends Sprite {
 
         Array<TextureRegion> frames = new Array<TextureRegion>();
         // animation for walking
+
         for (int i = 0; i < 4; i++) {
             frames.add(new TextureRegion(getTexture(), getRegionX() + i * 200, getRegionY(), 200, 200));
         }
-        running =new Animation(0.2f, frames);
+        running =new Animation(0.15f, frames);
+        frames.clear();
+
+        for (int i = 4; i < 8; i++) {
+            frames.add(new TextureRegion(getTexture(), getRegionX() + i * 200, getRegionY(), 200, 200));
+        }
+        dashing =new Animation(0.25f, frames);
+
 
         defineCharacter();
         character = new TextureRegion(getTexture(), getRegionX() + 200, getRegionY(), 200, 200);
@@ -203,6 +214,9 @@ public class MainCharacter extends Sprite {
         iron_storage-=valueForBuff;
         gun_powder_storage-=valueForBuff;
         oil_storage-=valueForBuff;
+        if(iron_storage<valueForBuff||gun_powder_storage<valueForBuff||oil_storage<valueForBuff){
+            enableBuff=false;
+        }
         buffTimer = 0;
         buffMode=true;
         ammunition = 200;
@@ -211,6 +225,7 @@ public class MainCharacter extends Sprite {
         Shape shape = fix.get(0).getShape();
         shape.setRadius(buffRadius);
         this.playerHP = 100;
+        Hud.updateknapscore(iron_count+gun_powder_count+oil_count, oil_storage, iron_storage, gun_powder_storage);
     }
     public void update(float dt){
         stateTime += dt;
@@ -271,6 +286,9 @@ public class MainCharacter extends Sprite {
 
         TextureRegion region;
         switch (currentState) {
+            case DASHING:
+                region = dashing.getKeyFrame(stateTimer, true);
+                break;
             case RUNNING:
                 region = running.getKeyFrame(stateTimer, true);
                 break;
@@ -287,6 +305,9 @@ public class MainCharacter extends Sprite {
     public State getState(){
 //        System.out.println("X: " + b2body.getLinearVelocity().x);
 //        System.out.println("Y: " + b2body.getLinearVelocity().y);
+        if(boostPressed){
+            return State.DASHING;
+        }
         if (b2body.getLinearVelocity().x > 5 || b2body.getLinearVelocity().x < -5 || b2body.getLinearVelocity().y > 5 || b2body.getLinearVelocity().y < -5) {
             return State.RUNNING;
         } else {
@@ -436,7 +457,7 @@ public class MainCharacter extends Sprite {
         radius=13/ SpaceConquest.PPM;
         additionalWeight = 0;
         knapsackCount = 0;
-
+        Hud.updateknapscore(iron_count+gun_powder_count+oil_count, oil_storage, iron_storage, gun_powder_storage);
     }
 
     public boolean isDestroyed() {
@@ -494,8 +515,10 @@ public class MainCharacter extends Sprite {
     }
 
     public int[] getKnapsackInfo() {
-        return new int[]{oil_count+gun_powder_count+iron_count, oil_count+oil_storage,iron_storage+iron_count,
-                gun_powder_storage+gun_powder_count};
+        return new int[]{oil_count+gun_powder_count+iron_count, oil_storage,iron_storage,
+                gun_powder_storage};
+//        return new int[]{oil_count+gun_powder_count+iron_count, oil_count+oil_storage,iron_storage+iron_count,
+//                gun_powder_storage+gun_powder_count};
     }
     public float[] getGadgetInfo() {
         return new float[]{ammunition,jetpack_time};
@@ -570,6 +593,10 @@ public class MainCharacter extends Sprite {
 
     public int getBuffCoolDown() {
         return buffCoolDown;
+    }
+
+    public void setBoostPressed(boolean boostPressed) {
+        this.boostPressed = boostPressed;
     }
 }
 

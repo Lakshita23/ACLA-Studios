@@ -34,7 +34,7 @@ public class FireBall extends Sprite {
     float distance;
     Body b2body;
     int firerID;
-    Sound sound;
+//    Sound sound;
     public FireBall(PlayScreen screen, float x, float y, float xSpd,float ySpd,float radius, boolean enemyFire, int firerID, boolean imba){
         this.xSpd = xSpd;
         this.ySpd = ySpd;
@@ -61,9 +61,9 @@ public class FireBall extends Sprite {
     }
 
     public void defineFireBall(){
-        sound = Gdx.audio.newSound(Gdx.files.internal("sounds/fireball.mp3"));
-        long id = sound.play(1.0f);
-        sound.setVolume(id,0.5f);
+//        sound = Gdx.audio.newSound(Gdx.files.internal("sounds/fireball.mp3"));
+//        long id = sound.play(1.0f);
+//        sound.setVolume(id,0.5f);
         BodyDef bdef = new BodyDef();
         bdef.position.set(getX() + (this.xSpd *(distance))/ SpaceConquest.PPM, getY() + (this.ySpd*distance)/ SpaceConquest.PPM);
         bdef.type = BodyDef.BodyType.DynamicBody;
@@ -125,9 +125,8 @@ public class FireBall extends Sprite {
         setPosition(b2body.getPosition().x - getWidth() / 2, b2body.getPosition().y - getHeight() / 2);
         if((stateTime > 3 || setToDestroy) && !destroyed) {
             world.destroyBody(b2body);
-
+//            sound.disposed;
             destroyed = true;
-            sound.dispose();
         }
 //        if(b2body.getLinearVelocity().y > 2f)
 //            b2body.setLinearVelocity(b2body.getLinearVelocity().x, 100f);

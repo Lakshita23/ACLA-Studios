@@ -119,7 +119,7 @@ public class PlayScreen implements Screen {
         music.setLooping(false);
         music.play();
 
-        atlas = new TextureAtlas("sprite.txt");
+        atlas = new TextureAtlas("sprites/sprite.txt");
         this.game = game;
         this.gsm = gsm;
         this.userID=0;
@@ -282,10 +282,12 @@ public class PlayScreen implements Screen {
 
             double speedreduction = Math.pow(0.9, mainCharacter.getAdditionalWeight()*0.4);
             if(jetpack_Button.isPressed() && mainCharacter.getJetpack_time()>0.05){
+                mainCharacter.setBoostPressed(true);
                 mainCharacter.exhaustJetPack(dt);
                 speedreduction = 3;
             }
             else {
+                mainCharacter.setBoostPressed(false);
                 //friction
                 mainCharacter.b2body.applyLinearImpulse(new Vector2((float) (mainCharacter.b2body.getLinearVelocity().x * -0.03),
                         (float) (mainCharacter.b2body.getLinearVelocity().y * -0.03)), mainCharacter.b2body.getWorldCenter(), true);

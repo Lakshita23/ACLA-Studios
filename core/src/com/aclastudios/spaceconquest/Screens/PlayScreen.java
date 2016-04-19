@@ -109,6 +109,10 @@ public class PlayScreen implements Screen {
     Server server;
     private int time;
 
+    private Texture sumo_up;
+    private Texture sumo_down;
+    private Texture boost_up;
+    private Texture boost_down;
     private Texture red;
     private Texture health;
     private Texture orange;
@@ -192,13 +196,13 @@ public class PlayScreen implements Screen {
         //Create a touchpad skin
         touchpadSkin = new Skin();
         //Set background image
-        touchpadSkin.add("touchBackground", new Texture("touchpad/touchBackground.png"));
+        //touchpadSkin.add("touchBackground", new Texture("touchpad/touchBackground.png"));
         //Set knob image
-        touchpadSkin.add("touchKnob", new Texture("touchpad/touchKnob.png"));
+        touchpadSkin.add("touchKnob", new Texture("touchpad/touchKnob_arrows.png"));
         //Create TouchPad Style
         touchpadStyle = new TouchpadStyle();
         //Create Drawable's from TouchPad skin
-        touchBackground = touchpadSkin.getDrawable("touchBackground");
+        //touchBackground = touchpadSkin.getDrawable("touchBackground");
         touchKnob = touchpadSkin.getDrawable("touchKnob");
 //        touchKnob = touchpadSkin.getDrawable("touchBackground");
         //Apply the Drawables to the TouchPad Style
@@ -207,9 +211,6 @@ public class PlayScreen implements Screen {
         //Create new TouchPad with the created style
         touchpad = new Touchpad(10/ SpaceConquest.PPM, touchpadStyle);
         //setBounds(x,y,width,height)
-
-
-
         touchpad.setBounds(0, 0, 70/SpaceConquest.PPM, 70/SpaceConquest.PPM);
 
         buttonsAtlas = new TextureAtlas("button/button.pack");
@@ -217,20 +218,32 @@ public class PlayScreen implements Screen {
 
 //        table = new Table(buttonSkin);
 //        table.setBounds(50,50, 50, 50);
+        sumo_up = new Texture(Gdx.files.internal("button/sumo_button_up.png"));
+        sumo_down = new Texture(Gdx.files.internal("button/sumo_button_down.png"));
+        boost_up = new Texture(Gdx.files.internal("button/boost_button_up.png"));
+        boost_down = new Texture(Gdx.files.internal("button/boost_button_down.png"));
         red = new Texture(Gdx.files.internal("button_red.png"));
         orange = new Texture(Gdx.files.internal("button_orange.png"));
         health = new Texture(Gdx.files.internal("healthbar.png"));
 
-        button = new ImageButton(new TextureRegionDrawable(new TextureRegion(red)), new TextureRegionDrawable(new TextureRegion(orange)));
-        button.setBounds(0,0,40/ SpaceConquest.PPM,40/ SpaceConquest.PPM);
-        jetpack_Button = new ImageButton(new TextureRegionDrawable(new TextureRegion(orange)), new TextureRegionDrawable(new TextureRegion(red)));
-        jetpack_Button.setBounds(0,0,40/ SpaceConquest.PPM,40/ SpaceConquest.PPM);
-        ImageButton.ImageButtonStyle imb = new ImageButton.ImageButtonStyle(new TextureRegionDrawable(new TextureRegion(orange)), new TextureRegionDrawable(new TextureRegion(red))
-                ,null,null,null,null);
         Color tintColor = new Color(0.5f, 0.5f, 0.5f, 1f);
-        imb.disabled = buttonSkin.newDrawable(new TextureRegionDrawable(new TextureRegion(red)),tintColor);
+        ImageButton.ImageButtonStyle imbFire = new ImageButton.ImageButtonStyle(new TextureRegionDrawable(new TextureRegion(red)), new TextureRegionDrawable(new TextureRegion(orange))
+                ,null,null,null,null);
+        imbFire.disabled = buttonSkin.newDrawable(new TextureRegionDrawable(new TextureRegion(orange)),tintColor);
+        button = new ImageButton(imbFire);
+        button.setBounds(0,0,40/ SpaceConquest.PPM,40/ SpaceConquest.PPM);
+
+        ImageButton.ImageButtonStyle imbBoost = new ImageButton.ImageButtonStyle(new TextureRegionDrawable(new TextureRegion(boost_up)), new TextureRegionDrawable(new TextureRegion(boost_down))
+                ,null,null,null,null);
+        imbBoost.disabled = buttonSkin.newDrawable(new TextureRegionDrawable(new TextureRegion(boost_down)),tintColor);
+        jetpack_Button = new ImageButton(imbBoost);
+        jetpack_Button.setBounds(0,0,40/ SpaceConquest.PPM,40/ SpaceConquest.PPM);
+
+        ImageButton.ImageButtonStyle imbSumo = new ImageButton.ImageButtonStyle(new TextureRegionDrawable(new TextureRegion(sumo_up)), new TextureRegionDrawable(new TextureRegion(sumo_down))
+                ,null,null,null,null);
+        imbSumo.disabled = buttonSkin.newDrawable(new TextureRegionDrawable(new TextureRegion(sumo_down)),tintColor);
 //        buffMode_Button = new ImageButton(new TextureRegionDrawable(new TextureRegion(orange)), new TextureRegionDrawable(new TextureRegion(red)));
-        buffMode_Button = new ImageButton(imb);
+        buffMode_Button = new ImageButton(imbSumo);
         buffMode_Button.setDisabled(true);
         buffMode_Button.setBounds(0, 0, 40 / SpaceConquest.PPM, 40 / SpaceConquest.PPM);
         //table.add(button);
@@ -267,21 +280,19 @@ public class PlayScreen implements Screen {
     public void handleInput(float dt){
         coolDown +=dt;
         buffCoolDown+=dt;
-        if (button.isPressed() && coolDown >rateOfFire && mainCharacter.getAmmunition()>0) {
+        if (button.isPressed() && coolDown >rateOfFire && !button.isDisabled()) {
             coolDown = 0;
-            //start of fire ball
-            System.out.println("I am firing");
-//            game.playServices.BroadcastMessage("fire:" + userID + ":" + mainCharacter.b2body.getPosition().x + ":"
-//                    + mainCharacter.b2body.getPosition().y + ":" + (mainCharacter.getLastXPercent()*(mainCharacter.getRadius()+1)) + ":" +
-//                    (mainCharacter.getLastYPercent()*(mainCharacter.getRadius()+1)));
-            //end of fireball
-
             mainCharacter.b2body.applyLinearImpulse(new Vector2((float) (mainCharacter.b2body.getLinearVelocity().x *-1),
                     (float) (mainCharacter.b2body.getLinearVelocity().y * -1)), mainCharacter.b2body.getWorldCenter(), true);
             mainCharacter.fire();
+            if(mainCharacter.getAmmunition()==0){
+                button.setDisabled(true);
+            }
         }
         else {
-
+            if(mainCharacter.getAmmunition()>0){
+                button.setDisabled(false);
+            }
             double speedreduction = Math.pow(0.9, mainCharacter.getAdditionalWeight()*0.4);
             if(jetpack_Button.isPressed() && mainCharacter.getJetpack_time()>0.05){
                 mainCharacter.setBoostPressed(true);

@@ -77,7 +77,7 @@ public class MainCharacter extends Sprite {
     private int buffWeight = 10;
     private float buffRadius = 25/ SpaceConquest.PPM;
     private boolean enableBuff = false;
-    private int valueForBuff = 1;
+    private int valueForBuff = 9;
     private int buffCoolDown = 30;
 
     //potentially useless

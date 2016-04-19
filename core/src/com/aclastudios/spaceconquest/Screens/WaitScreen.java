@@ -29,7 +29,7 @@ public class WaitScreen implements Screen {
 	@Override
 	public void show() {
 		batch = new SpriteBatch();
-		background = new Texture("waitscreen.jpg");
+		background = new Texture("darkscreen.png");
 		background.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
 		sprite = new Sprite(background);
 		sprite.setSize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
@@ -53,6 +53,7 @@ public class WaitScreen implements Screen {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
+			MenuScreen.menuMusic.stop();
 			gsm.set(new PlayScreen(game, gsm));
 
 		} else if (game.multiplayerSessionInfo.mState == game.multiplayerSessionInfo.ROOM_MENU) {

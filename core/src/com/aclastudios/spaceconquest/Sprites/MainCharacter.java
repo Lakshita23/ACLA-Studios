@@ -1,8 +1,12 @@
 package com.aclastudios.spaceconquest.Sprites;
 
+import com.aclastudios.spaceconquest.Scenes.Hud;
 import com.aclastudios.spaceconquest.Screens.PlayScreen;
 import com.aclastudios.spaceconquest.SpaceConquest;
 import com.aclastudios.spaceconquest.Weapons.FireBall;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.Sprite;
@@ -37,15 +41,18 @@ public class MainCharacter extends Sprite {
 
     private int knapsackCount = 0;
     private int additionalWeight = 0;
-    private int threshold = 10;
-    private float defaultRadius = 13/ SpaceConquest.PPM;
+    private int threshold = 5;
+    private float defaultRadius = 11/ SpaceConquest.PPM;
 
-    private float radius = 13/ SpaceConquest.PPM;
+    private float radius = 11/ SpaceConquest.PPM;
     private int charScore;
-    private float playerHP = 20;
+    private float playerHP = 10;
+    private int maxHp = 10;
+    private int defaultMaxHp = 10;
 
     private Array<FireBall> fireballs;
     private int fireCount;
+    private int IFCount;
 
     private float scale = (float) (1.0/10);
 
@@ -56,11 +63,22 @@ public class MainCharacter extends Sprite {
     private float deathCount;
 
     // for animating the sprite
-    private enum State { STANDING, RUNNING };
+    private boolean boostPressed = false;
+
+    private enum State { STANDING, RUNNING, DASHING };
     private State currentState;
     private State previousState;
+    private boolean buffMode = false;
     private Animation running;
+    private Animation dashing;
     private float stateTimer;
+    private float buffTimer;
+    private int buffoutTime = 10;
+    private int buffWeight = 10;
+    private float buffRadius = 25/ SpaceConquest.PPM;
+    private boolean enableBuff = false;
+    private int valueForBuff = 9;
+    private int buffCoolDown = 30;
 
     //potentially useless
     private float x_value;
@@ -79,32 +97,53 @@ public class MainCharacter extends Sprite {
     private int gun_powder_storage = 0;
 
     private int ammunition;
+    private int default_ammunition = 20;
     private int ammoLevel = 1;
     private float jetpack_time;
+    private float default_jetpack_time = 6;
     private int jpLevel = 1;
-
+    private float characterSize =  25/ SpaceConquest.PPM;
+    private boolean inEnemyZone = false;
     private ArrayList<Integer> killedBy = new ArrayList<Integer>();
+    private Sound fire;
+    private Sound imbafire;
+    private Music sumo;
+    private long id;
+
+
+
     public MainCharacter(World world,PlayScreen screen, String SpriteName){
         super(screen.getAtlas().findRegion(SpriteName));
         this.screen = screen;
         this.world = world;
         map =screen.getMap();
-
+        imbafire = Gdx.audio.newSound(Gdx.files.internal("sounds/imbafireball.mp3"));
+        fire = Gdx.audio.newSound(Gdx.files.internal("sounds/fireball.wav"));
+        sumo = Gdx.audio.newMusic(Gdx.files.internal("sounds/sumo_mode.wav"));
         // initializing variables for animation:
         currentState = State.STANDING;
         previousState = State.STANDING;
         stateTimer = 0;
+        buffTimer = 0;
 
         Array<TextureRegion> frames = new Array<TextureRegion>();
         // animation for walking
+
         for (int i = 0; i < 4; i++) {
             frames.add(new TextureRegion(getTexture(), getRegionX() + i * 200, getRegionY(), 200, 200));
         }
-        running =new Animation(0.2f, frames);
+        running =new Animation(0.15f, frames);
+        frames.clear();
+
+        for (int i = 4; i < 8; i++) {
+            frames.add(new TextureRegion(getTexture(), getRegionX() + i * 200, getRegionY(), 200, 200));
+        }
+        dashing =new Animation(0.25f, frames);
+
 
         defineCharacter();
         character = new TextureRegion(getTexture(), getRegionX() + 200, getRegionY(), 200, 200);
-        setBounds(0, 0, 25/ SpaceConquest.PPM, 25/ SpaceConquest.PPM);
+        setBounds(0, 0, characterSize,characterSize);
         setRegion(character);
         fireballs = new Array<FireBall>();
         fireCount = 0;
@@ -121,8 +160,9 @@ public class MainCharacter extends Sprite {
     }
 
     public void defineCharacter(){
-        ammunition = 35;
-        jetpack_time = 2;
+        knapsackCount = 0;
+        buffMode = false;
+        updateGadgetLevel();
         BodyDef bdef = new BodyDef();
         //Array<RectangleMapObject> object = map.getLayers().get(7).getObjects().getByType(RectangleMapObject.class);
         for (MapLayer layer : map.getLayers()) {
@@ -135,35 +175,89 @@ public class MainCharacter extends Sprite {
 
             }
         }
-//        bdef.position.set(150,150); //temp set position
         bdef.type = BodyDef.BodyType.DynamicBody;
         b2body = world.createBody(bdef);
 
         FixtureDef fdef = new FixtureDef();
         CircleShape shape = new CircleShape();
         shape.setRadius(defaultRadius);
+
         xSpeedPercent = 0;
         ySpeedPercent = 0;
         //Collision Bit
         fdef.filter.categoryBits = SpaceConquest.MAIN_CHARACTER_BIT; //what category is this fixture
         fdef.filter.maskBits = SpaceConquest.OBSTACLE_BIT
+                |SpaceConquest.OBJECTIVE_BIT
                 |SpaceConquest.FIREBALL_BIT
                 |SpaceConquest.IRON_BIT
                 |SpaceConquest.GUNPOWDER_BIT
                 |SpaceConquest.OIL_BIT
                 |SpaceConquest.STATION_BIT
                 |SpaceConquest.ENEMY_STATION_BIT
-                |SpaceConquest.CHARACTER_BIT; //What can the character collide with?
+                |SpaceConquest.CHARACTER_BIT
+                |SpaceConquest.IMBA_FIREBALL_BIT; //What can the character collide with?
         //Body
         fdef.shape = shape;
         b2body.createFixture(fdef).setUserData(this);
 //        fixture = b2body.createFixture(fdef);
     }
+
+    public void updateGadgetLevel(){
+        ammoLevel = Math.min(iron_storage/threshold,gun_powder_storage/threshold);
+        jpLevel = Math.min(iron_storage/threshold,oil_storage/threshold);
+        ammunition = default_ammunition+ammoLevel*20;
+        jetpack_time = default_jetpack_time + jpLevel*5;
+    }
+    public void redefineCharacter(){
+        ammunition = (ammunition>100?100:ammunition);
+        this.additionalWeight -= buffWeight;
+        Array<Fixture> fix = b2body.getFixtureList();
+        Shape shape = fix.get(0).getShape();
+        shape.setRadius(radius);
+//        setScale(characterSize/(buffRadius));
+        setScale(1);
+        this.playerHP = (playerHP>maxHp?maxHp:playerHP);
+    }
+    public void defineBuffCharacter(){
+        sumo.play();
+        iron_storage-=valueForBuff;
+        gun_powder_storage-=valueForBuff;
+        oil_storage-=valueForBuff;
+        if(iron_storage<valueForBuff||gun_powder_storage<valueForBuff||oil_storage<valueForBuff){
+            enableBuff=false;
+        }
+        buffTimer = 0;
+        buffMode=true;
+        ammunition = 200;
+        this.additionalWeight += buffWeight;
+        Array<Fixture> fix = b2body.getFixtureList();
+        Shape shape = fix.get(0).getShape();
+        shape.setRadius(buffRadius);
+        setScale(buffRadius/defaultRadius);
+        this.playerHP = ((((this.playerHP+5)*5)>100)?100:(this.playerHP+5)*5);
+        Hud.updateknapscore(iron_count + gun_powder_count + oil_count, oil_storage, iron_storage, gun_powder_storage);
+    }
     public void update(float dt){
-        if (playerHP<20){
+        stateTime += dt;
+        buffTimer += dt;
+        maxHp = 10 + 5*(iron_storage+oil_storage+gun_powder_storage)/9;
+        if (playerHP<maxHp){
             playerHP+=0.01;
         }
-        stateTime += dt;
+        if (inEnemyZone){
+            playerHP -= 0.2;
+            if (playerHP<=0){
+                inEnemyZone=false;
+                dead();
+                playerHP=maxHp;
+            }
+        }
+
+        if(buffMode && buffTimer >= buffoutTime){
+            buffMode = false;
+            buffTimer = 0;
+            redefineCharacter();
+        }
         if (setToDestroy ) {
             destroyed = true;
             setToDestroy = false;
@@ -182,7 +276,7 @@ public class MainCharacter extends Sprite {
             last_y_coord = b2body.getPosition().y;
             setPosition(last_x_coord - getWidth() / 2, last_y_coord - getHeight() / 2);
             setRegion(getFrame(dt));
-            setScale(getCharacterScale());
+//            setScale(getCharacterScale());
             //System.out.println("My weight is " + additionalWeight);
         }
 
@@ -203,6 +297,9 @@ public class MainCharacter extends Sprite {
 
         TextureRegion region;
         switch (currentState) {
+            case DASHING:
+                region = dashing.getKeyFrame(stateTimer, true);
+                break;
             case RUNNING:
                 region = running.getKeyFrame(stateTimer, true);
                 break;
@@ -219,6 +316,9 @@ public class MainCharacter extends Sprite {
     public State getState(){
 //        System.out.println("X: " + b2body.getLinearVelocity().x);
 //        System.out.println("Y: " + b2body.getLinearVelocity().y);
+        if(boostPressed){
+            return State.DASHING;
+        }
         if (b2body.getLinearVelocity().x > 5 || b2body.getLinearVelocity().x < -5 || b2body.getLinearVelocity().y > 5 || b2body.getLinearVelocity().y < -5) {
             return State.RUNNING;
         } else {
@@ -257,22 +357,15 @@ public class MainCharacter extends Sprite {
         return charScore;
     }
 
-//<<<<<<< HEAD
-//    public void addCharWeight(float charWeight) {
-//        this.charWeight += charWeight;
-//        Array<Fixture> fix = b2body.getFixtureList();
-//        Shape shape = fix.get(0).getShape();
-//        radius = (13 + (this.charWeight * scale * 7))/ SpaceConquest.PPM;
-//        shape.setRadius(radius);
-//=======
     public void increaseKnapSack(float charWeight) {
         knapsackCount++;
         if(knapsackCount > threshold) {
             this.additionalWeight += charWeight;
             Array<Fixture> fix = b2body.getFixtureList();
             Shape shape = fix.get(0).getShape();
-            radius = defaultRadius + ((this.additionalWeight * scale * 7)) / SpaceConquest.PPM;
-            shape.setRadius(radius);
+//            radius = defaultRadius + ((this.additionalWeight * scale * 7)) / SpaceConquest.PPM;
+//            radius = defaultRadius + ((this.additionalWeight * scale * 7)) / SpaceConquest.PPM;
+//            shape.setRadius((buffMode)?buffRadius:radius);
 
 //        System.out.println(shape.getRadius());
 //
@@ -280,16 +373,17 @@ public class MainCharacter extends Sprite {
 
 
             //stop user from collecting resource
-            if (this.additionalWeight >= 5) {
+            if (this.additionalWeight >= 10) {
                 Filter filter = fix.get(0).getFilterData();
                 filter.maskBits = SpaceConquest.OBSTACLE_BIT
                         | SpaceConquest.FIREBALL_BIT
+                        | SpaceConquest.IMBA_FIREBALL_BIT
                         | SpaceConquest.STATION_BIT
                         | SpaceConquest.ENEMY_STATION_BIT
                         | SpaceConquest.CHARACTER_BIT;
                 fix.get(0).setFilterData(filter);
             }
-            setScale(getCharacterScale());
+//            setScale(getCharacterScale());
         }
     }
 
@@ -298,11 +392,20 @@ public class MainCharacter extends Sprite {
     }
 
     public float[] fire(){
-        fireCount+=1;
+        if(!buffMode) {
+            fireCount += 1;
+            fire.play();
+        }else{
+            IFCount+=1;
+            imbafire.play();
+        }
         ammunition-=1;
         float[] s = {b2body.getPosition().x,b2body.getPosition().y};
+        Sound sound;
+
         FireBall f = new FireBall(screen, s[0], s[1], lastXPercent,
-                lastYPercent, radius, false, screen.getUserID());
+                lastYPercent, (buffMode)?buffRadius:radius, false, screen.getUserID(), buffMode);
+
         fireballs.add(f);
 //        System.out.println("ammunition left: "+ ammunition);
         return s;
@@ -314,9 +417,10 @@ public class MainCharacter extends Sprite {
     }
 
     public void depositResource() {
-        additionalWeight = 0;
+        additionalWeight = (buffMode?buffWeight:0);
         knapsackCount = 0;
-
+        radius = defaultRadius;
+        playerHP = ((playerHP>maxHp)?playerHP:maxHp);
         //storing the resource and converting them into valued item
         iron_storage+=iron_count;
         gun_powder_storage+=gun_powder_count;
@@ -324,53 +428,52 @@ public class MainCharacter extends Sprite {
         iron_count = 0;
         gun_powder_count=0;
         oil_count = 0;
-        if(iron_storage>(ammoLevel*10) && gun_powder_storage>(ammoLevel*10)){
+
+        if(iron_storage>(ammoLevel*2) && gun_powder_storage>(ammoLevel*2)){
             ammoLevel+=1;
         }
-        if(oil_storage>(jpLevel*10))
+        if(oil_storage>(jpLevel*2))
             jpLevel+=1;
         ammunition = 20 + ammoLevel*15;
-        jetpack_time = (float) (jpLevel*2.0);
-//        ammunition +=  ((iron_storage>=gun_powder_storage)?gun_powder_storage:iron_storage)*15;
-//        jetpack_time += oil_storage * 2;
-//        //destroying the exhausted resource
-//        oil_storage=0;
-//        int lesserone=(iron_storage>=gun_powder_storage)?gun_powder_storage:iron_storage;
-//        iron_storage -= lesserone;
-//        gun_powder_storage -=lesserone;
+        jetpack_time = default_jetpack_time+(float) (jpLevel*2.0);
+
+        if(iron_storage>valueForBuff&&gun_powder_storage>valueForBuff&&oil_storage>valueForBuff){
+            enableBuff = true;
+            buffCoolDown-=(Math.min(Math.min(iron_storage%valueForBuff,gun_powder_storage%valueForBuff),
+                    oil_storage%valueForBuff));
+        }
 
         Array<Fixture> fix = b2body.getFixtureList();
         Shape shape = fix.get(0).getShape();
-        shape.setRadius(defaultRadius);
+        shape.setRadius(buffMode?buffRadius:defaultRadius);
         //player can now collide with resource
         Filter filter = fix.get(0).getFilterData();
         filter.maskBits =  SpaceConquest.OBSTACLE_BIT
-                | SpaceConquest.IRON_BIT
+                |SpaceConquest.IRON_BIT
                 |SpaceConquest.GUNPOWDER_BIT
                 |SpaceConquest.OIL_BIT
                 |SpaceConquest.STATION_BIT
                 |SpaceConquest.ENEMY_STATION_BIT
                 |SpaceConquest.CHARACTER_BIT
-                |SpaceConquest.FIREBALL_BIT;
+                |SpaceConquest.FIREBALL_BIT
+                |SpaceConquest.IMBA_FIREBALL_BIT;
         fix.get(0).setFilterData(filter);
     }
 
-    public float getCharacterScale() {
-
-        return ((float)1+ (additionalWeight *scale));
-    }
+//    public float getCharacterScale() {
+//
+//        return ((float)1+ (additionalWeight *scale));
+//    }
     public void dead(){
         iron_count = 0;
         gun_powder_count = 0;
         oil_count = 0;
         setToDestroy = true;
-        radius=13/ SpaceConquest.PPM;
-//<<<<<<< HEAD
-//        this.charWeight = 0;
-//=======
-        this.additionalWeight = 0;
-        this.knapsackCount = 0;
-
+        radius=defaultRadius;
+        additionalWeight = 0;
+        knapsackCount = 0;
+        Hud.updateknapscore(iron_count+gun_powder_count+oil_count, oil_storage, iron_storage, gun_powder_storage);
+        redefineCharacter();
     }
 
     public boolean isDestroyed() {
@@ -416,11 +519,11 @@ public class MainCharacter extends Sprite {
     public float getJetpack_time() {
         return jetpack_time;
     }
-    public void reduceHP(){
-        playerHP=playerHP-4;
+    public void takeFireballDamage(boolean imbaOrNot){
+        playerHP-=(imbaOrNot?10:4);
         if (playerHP<=0){
             dead();
-            playerHP=20;
+            playerHP=maxHp;
         }
     }
     public float getHP(){
@@ -428,8 +531,10 @@ public class MainCharacter extends Sprite {
     }
 
     public int[] getKnapsackInfo() {
-        return new int[]{oil_count+gun_powder_count+iron_count, oil_count+oil_storage,iron_storage+iron_count,
-                gun_powder_storage+gun_powder_count};
+        return new int[]{oil_count+gun_powder_count+iron_count, oil_storage,iron_storage,
+                gun_powder_storage};
+//        return new int[]{oil_count+gun_powder_count+iron_count, oil_count+oil_storage,iron_storage+iron_count,
+//                gun_powder_storage+gun_powder_count};
     }
     public float[] getGadgetInfo() {
         return new float[]{ammunition,jetpack_time};
@@ -480,6 +585,34 @@ public class MainCharacter extends Sprite {
 
     public int getFireCount() {
         return fireCount;
+    }
+
+    public void setInEnemyZone(boolean inEnemyZone) {
+        this.inEnemyZone = inEnemyZone;
+    }
+
+    public boolean isBuffMode() {
+        return buffMode;
+    }
+
+    public float getBuffRadius() {
+        return buffRadius;
+    }
+
+    public int getIFCount() {
+        return IFCount;
+    }
+
+    public boolean isEnableBuff() {
+        return enableBuff;
+    }
+
+    public int getBuffCoolDown() {
+        return buffCoolDown;
+    }
+
+    public void setBoostPressed(boolean boostPressed) {
+        this.boostPressed = boostPressed;
     }
 }
 

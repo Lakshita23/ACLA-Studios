@@ -20,4 +20,8 @@ public class Server{ //Not a thread for now
         game.playServices.BroadcastMessage("UpdateScoreAll:" + RedTeamScore + ":" + BlueTeamScore);
         Hud.updatescore(RedTeamScore, BlueTeamScore);
     }
+    public void setRnBteamScore(int red, int blue){
+        RedTeamScore = red;
+        BlueTeamScore = blue;
+    }
 }

@@ -3,7 +3,6 @@ package com.aclastudios.spaceconquest.Sprites.Resource;
 import com.aclastudios.spaceconquest.Screens.PlayScreen;
 import com.aclastudios.spaceconquest.SpaceConquest;
 import com.aclastudios.spaceconquest.Sprites.MainCharacter;
-import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.CircleShape;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
@@ -33,7 +32,7 @@ public class GunPowder extends Resources {
         fdef.filter.maskBits = SpaceConquest.OBSTACLE_BIT
                 |SpaceConquest.MAIN_CHARACTER_BIT
                 |SpaceConquest.CHARACTER_BIT
-                |SpaceConquest.OBJECT_BIT; //What can the character collide with?
+                |SpaceConquest.OBJECTIVE_BIT; //What can the character collide with?
 
 
         //Body

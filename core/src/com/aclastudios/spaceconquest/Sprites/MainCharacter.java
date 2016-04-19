@@ -169,7 +169,6 @@ public class MainCharacter extends Sprite {
 
             }
         }
-//        bdef.position.set(150,150); //temp set position
         bdef.type = BodyDef.BodyType.DynamicBody;
         b2body = world.createBody(bdef);
 

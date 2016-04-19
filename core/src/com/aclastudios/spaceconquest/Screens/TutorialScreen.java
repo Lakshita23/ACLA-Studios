@@ -46,8 +46,8 @@ public class TutorialScreen implements Screen {
         stage = new Stage(viewport, (game).batch);
 
         BUTTON_WIDTH = 25;
-        BUTTON_HEIGHT = 200;
-        count = -1;
+        BUTTON_HEIGHT = 20;
+        count = 0;
 
         imgstylenext = new ImageButton.ImageButtonStyle();
         imgstylenext.imageUp = new TextureRegionDrawable(new TextureRegion(new Texture("tutorial/next-notpressed.png")));
@@ -64,7 +64,7 @@ public class TutorialScreen implements Screen {
     public void show() {
 
         batch = new SpriteBatch();
-        background = new Texture("screens/Screen.png");
+        background = new Texture(AssetLoader.images[0]);
 
         background.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
         sprite = new Sprite(background);
@@ -81,7 +81,7 @@ public class TutorialScreen implements Screen {
         next.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                if (count<4) {
+                if (count<5) {
                     count++;
                     background = new Texture(AssetLoader.images[count]);
                     background.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);

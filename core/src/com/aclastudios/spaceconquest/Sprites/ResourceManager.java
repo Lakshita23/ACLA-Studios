@@ -75,6 +75,9 @@ public class ResourceManager {
         System.out.println("Broadcast msg: "+allres);
     }
 
+    public void broadcastResources(){
+        game.playServices.BroadcastMessage("Resources:" + coordinatesR());
+    }
     public void generateResources(){
         if (userID==0){
             Random rand = new Random();
@@ -84,7 +87,7 @@ public class ResourceManager {
                 generateGunPowder(rand);
             while (oil_count<7)
                 generateOil(rand);
-            game.playServices.BroadcastMessage("Resources:" + coordinatesR());
+            broadcastResources();
 
         }
         else{

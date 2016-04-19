@@ -648,7 +648,8 @@ public class PlayScreen implements Screen {
                     else if (data[0].equals("Resources")){
                         System.out.println("Data 1:" + data[1]);
                         if (data[1].length()<21){
-                            game.playServices.BroadcastMessage("ResendR");
+                            System.out.println("req resend");
+                            game.playServices.BroadcastMessage("ResendR:");
                         }
                         else {
                             resourceManager.getResourceString(data[1]);
@@ -656,9 +657,10 @@ public class PlayScreen implements Screen {
                         }
                     }
                     else if (data[0].equals("ResendR")){
-                        if (userID==0){
-                            game.playServices.BroadcastMessage("Resources:"+resourceManager.coordinatesR());
+                        if (getServerID()==getUserID()){
+                            resourceManager.broadcastResources();
                         }
+
                     }
                     else if (data[0].equals("Delete")){
                         System.out.println("delete resource"+data[2]+" "+data[3]);

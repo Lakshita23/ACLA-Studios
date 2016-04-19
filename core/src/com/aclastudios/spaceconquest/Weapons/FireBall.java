@@ -1,8 +1,11 @@
 package com.aclastudios.spaceconquest.Weapons;
 
+import com.aclastudios.spaceconquest.Helper.AssetLoader;
 import com.aclastudios.spaceconquest.Screens.PlayScreen;
 import com.aclastudios.spaceconquest.SpaceConquest;
 import com.aclastudios.spaceconquest.Sprites.Space;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
@@ -31,7 +34,8 @@ public class FireBall extends Sprite {
     float distance;
     Body b2body;
     int firerID;
-    public FireBall(PlayScreen screen, float x, float y, float xSpd,float ySpd,float radius, boolean enemyFire, int firerID){
+    Sound sound;
+    public FireBall(PlayScreen screen, float x, float y, float xSpd,float ySpd,float radius, boolean enemyFire, int firerID, boolean imba){
         this.xSpd = xSpd;
         this.ySpd = ySpd;
         this.screen = screen;
@@ -46,11 +50,20 @@ public class FireBall extends Sprite {
         }
         fireAnimation = new Animation(0.2f, frames);
         setRegion(fireAnimation.getKeyFrame(0));
-        setBounds(x, y, 6/ SpaceConquest.PPM, 6/ SpaceConquest.PPM);
-        defineFireBall();
+        if(imba) {
+            setBounds(x, y, 18 / SpaceConquest.PPM, 18 / SpaceConquest.PPM);
+            defineIMBAFireBall();
+        }
+        else{
+            setBounds(x, y, 6 / SpaceConquest.PPM, 6 / SpaceConquest.PPM);
+            defineFireBall();
+        }
     }
 
     public void defineFireBall(){
+        sound = Gdx.audio.newSound(Gdx.files.internal("sounds/fireball.mp3"));
+        long id = sound.play(1.0f);
+        sound.setVolume(id,0.5f);
         BodyDef bdef = new BodyDef();
         bdef.position.set(getX() + (this.xSpd *(distance))/ SpaceConquest.PPM, getY() + (this.ySpd*distance)/ SpaceConquest.PPM);
         bdef.type = BodyDef.BodyType.DynamicBody;
@@ -78,6 +91,34 @@ public class FireBall extends Sprite {
         b2body.setLinearVelocity(new Vector2((this.xSpd * 1000), (this.ySpd * 1000)));
     }
 
+    public void defineIMBAFireBall(){
+        BodyDef bdef = new BodyDef();
+        bdef.position.set(getX() + (this.xSpd *(distance))/ SpaceConquest.PPM, getY() + (this.ySpd*distance)/ SpaceConquest.PPM);
+        bdef.type = BodyDef.BodyType.DynamicBody;
+        bdef.bullet = true;
+        //if(!world.isLocked())
+        b2body = world.createBody(bdef);
+
+        FixtureDef fdef = new FixtureDef();
+        CircleShape shape = new CircleShape();
+        shape.setRadius(9/ SpaceConquest.PPM);
+        if(enemyFire){
+            fdef.filter.categoryBits = SpaceConquest.IMBA_FIREBALL_BIT;
+            fdef.filter.maskBits = SpaceConquest.OBSTACLE_BIT
+                    |SpaceConquest.MAIN_CHARACTER_BIT;
+        }
+        else {
+            fdef.filter.categoryBits = SpaceConquest.FRIENDLY_FIREBALL_BIT;
+            fdef.filter.maskBits = SpaceConquest.OBSTACLE_BIT
+                    |SpaceConquest.CHARACTER_BIT;
+        }
+
+        fdef.shape = shape;
+        fdef.restitution = 1;
+        b2body.createFixture(fdef).setUserData(this);
+        b2body.setLinearVelocity(new Vector2((this.xSpd * 1000), (this.ySpd * 1000)));
+    }
+
     public void update(float dt){
         stateTime += dt;
         setRegion(fireAnimation.getKeyFrame(stateTime, true));
@@ -86,6 +127,7 @@ public class FireBall extends Sprite {
             world.destroyBody(b2body);
 
             destroyed = true;
+            sound.dispose();
         }
 //        if(b2body.getLinearVelocity().y > 2f)
 //            b2body.setLinearVelocity(b2body.getLinearVelocity().x, 100f);

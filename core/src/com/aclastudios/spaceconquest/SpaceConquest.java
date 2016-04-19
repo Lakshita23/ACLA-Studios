@@ -17,14 +17,14 @@ public class SpaceConquest extends Game {
 	public static final int V_HEIGHT =208; //Virtual screen height of the game
 	public static final float PPM = 2;
 	public static final float MAP_SCALE = (float) 0.7;
-	public SpriteBatch batch;
+	public static SpriteBatch batch;
 
 	private GameScreenManager gsm;
 
 	public static final short OBSTACLE_BIT = 1;
 	public static final short MAIN_CHARACTER_BIT = 2;
 	public static final short IRON_BIT = 4;
-	public static final short OBJECT_BIT = 8;
+	public static final short OBJECTIVE_BIT = 8;
 	public static final short STATION_BIT = 16;
 	public static final short CHARACTER_BIT = 32;
 	public static final short GUNPOWDER_BIT = 64;
@@ -32,6 +32,7 @@ public class SpaceConquest extends Game {
 	public static final short ENEMY_STATION_BIT = 256;
 	public static final short FIREBALL_BIT = 1024;
 	public static final short FRIENDLY_FIREBALL_BIT = 2048;
+	public static final short IMBA_FIREBALL_BIT = 4096;
 
 	public PlayServices playServices;
 	public MultiplayerSessionInfo multiplayerSessionInfo;

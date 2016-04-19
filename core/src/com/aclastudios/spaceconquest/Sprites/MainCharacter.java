@@ -4,6 +4,9 @@ import com.aclastudios.spaceconquest.Scenes.Hud;
 import com.aclastudios.spaceconquest.Screens.PlayScreen;
 import com.aclastudios.spaceconquest.SpaceConquest;
 import com.aclastudios.spaceconquest.Weapons.FireBall;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.Sprite;
@@ -102,13 +105,16 @@ public class MainCharacter extends Sprite {
     private float characterSize =  25/ SpaceConquest.PPM;
     private boolean inEnemyZone = false;
     private ArrayList<Integer> killedBy = new ArrayList<Integer>();
+    private Sound sound;
+
+    Music music;
 
     public MainCharacter(World world,PlayScreen screen, String SpriteName){
         super(screen.getAtlas().findRegion(SpriteName));
         this.screen = screen;
         this.world = world;
         map =screen.getMap();
-
+        sound = Gdx.audio.newSound(Gdx.files.internal("sounds/fireball.mp3"));
         // initializing variables for animation:
         currentState = State.STANDING;
         previousState = State.STANDING;
@@ -146,6 +152,9 @@ public class MainCharacter extends Sprite {
         setToDestroy = false;
         destroyed = false;
         deathCount = 0;
+
+        music = Gdx.audio.newMusic(Gdx.files.internal("sounds/walk.mp3"));
+
     }
 
     public void defineCharacter(){
@@ -389,7 +398,7 @@ public class MainCharacter extends Sprite {
         ammunition-=1;
         float[] s = {b2body.getPosition().x,b2body.getPosition().y};
         FireBall f = new FireBall(screen, s[0], s[1], lastXPercent,
-                lastYPercent, (buffMode)?buffRadius:radius, false, screen.getUserID(), buffMode);
+                lastYPercent, (buffMode)?buffRadius:radius, false, screen.getUserID(), buffMode,sound);
 
         fireballs.add(f);
 //        System.out.println("ammunition left: "+ ammunition);

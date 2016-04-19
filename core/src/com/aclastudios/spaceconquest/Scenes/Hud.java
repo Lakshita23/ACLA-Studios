@@ -162,7 +162,7 @@ public class Hud implements Disposable {
         ammunition=ammo;
         jetpackTime = jpTime;
         timeCount += dt;
-        if (screen.getUserID()==0) {
+        if (screen.getUserID()==screen.getServerID()) {
             if (timeCount >= 1) {
                 if (worldTimer > 0) {
                     worldTimer--;

@@ -390,12 +390,8 @@ public class AndroidLauncher extends AndroidApplication implements GameHelperLis
 	}
 
 	@Override
-	public boolean checkhost() {
-		Participant p = (Participant) MultiplayerSession.mParticipants.get(0);
-		if (!p.isConnectedToRoom()){
-			return false;
-		} else {
-			return true;
-		}
+	public boolean checkhost(int serverID) {
+		Participant p = (Participant) MultiplayerSession.mParticipants.get(serverID);
+		return p.isConnectedToRoom();
 	}
 }

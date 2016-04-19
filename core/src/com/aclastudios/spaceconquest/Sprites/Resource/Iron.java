@@ -29,7 +29,7 @@ public class Iron extends Resources {
         fdef.filter.maskBits = SpaceConquest.OBSTACLE_BIT
                 |SpaceConquest.MAIN_CHARACTER_BIT
                 |SpaceConquest.CHARACTER_BIT
-                |SpaceConquest.OBJECT_BIT; //What can the character collide with?
+                |SpaceConquest.OBJECTIVE_BIT; //What can the character collide with?
 
 
         //Body

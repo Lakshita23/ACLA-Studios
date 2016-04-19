@@ -54,12 +54,11 @@ public class playersSelectScreen implements Screen {
         style.font = new BitmapFont(Gdx.files.internal("fonts/spaceAge.fnt"));
         style.font.setColor(Color.BLUE);
         style.font.getData().setScale(0.8f, 0.8f);
-        style.up= new TextureRegionDrawable(new TextureRegion(new Texture("basic/button_up.png")));
-        style.down= new TextureRegionDrawable(new TextureRegion(new Texture("basic/button_down.png")));
+//        style.up= new TextureRegionDrawable(new TextureRegion(new Texture("basic/button_up.png")));
+//        style.down= new TextureRegionDrawable(new TextureRegion(new Texture("basic/button_down.png")));
+        style.up= new TextureRegionDrawable(new TextureRegion(new Texture("button/Button-notPressed.png")));
+        style.down= new TextureRegionDrawable(new TextureRegion(new Texture("button/Button-Pressed.png")));
 
-//        style.unpressedOffsetX = 5f;
-//        style.pressedOffsetX = style.unpressedOffsetX + 1f;
-//        style.pressedOffsetY = -1f;
 
         play1 = new TextButton("1 v 1", style);
         play2 = new TextButton("2 v 2", style);
@@ -70,14 +69,14 @@ public class playersSelectScreen implements Screen {
 
     @Override
     public void show() {
-        if (AssetLoader.gameMusic != null) {
-            AssetLoader.gameMusic.stop();
-            AssetLoader.disposeSFX();
-        }
+//        if (AssetLoader.gameMusic != null) {
+//            AssetLoader.gameMusic.stop();
+//            AssetLoader.disposeSFX();
+//        }
         //AssetLoader.menuMusic.play();
 
         batch = new SpriteBatch();
-        background = new Texture("waitscreen.jpg");
+        background = new Texture("darkscreen.png");
 
         background.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
         sprite = new Sprite(background);

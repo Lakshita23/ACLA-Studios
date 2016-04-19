@@ -71,10 +71,10 @@ public class MenuScreen implements Screen {
     public void show() {
         // The elements are displayed in the order you add them.
         // The first appear on top, the last at the bottom.
-        if (AssetLoader.gameMusic != null) {
-            AssetLoader.gameMusic.stop();
-            AssetLoader.disposeSFX();
-        }
+//        if (AssetLoader.gameMusic != null) {
+//            AssetLoader.gameMusic.stop();
+//            AssetLoader.disposeSFX();
+//        }
         //AssetLoader.menuMusic.play();
 
         batch = new SpriteBatch();
@@ -117,9 +117,9 @@ public class MenuScreen implements Screen {
         instructions.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                AssetLoader.clickSound.play(AssetLoader.VOLUME);
-                // TODO Set to tutorial screen
-                //  gsm.set(new StoryScreen(game, gsm));
+               // AssetLoader.clickSound.play(AssetLoader.VOLUME);
+                AssetLoader.loadTutorialScreen();
+                gsm.set(new TutorialScreen(game, gsm));
             }
         });
 

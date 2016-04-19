@@ -91,6 +91,10 @@ public class ResourceManager {
             try {
                 System.out.println("in generate resources for player");
                 System.out.println("Allres: "+allres);
+                if (allres.length()<21){
+                    System.out.println("request resource from rm");
+                    game.playServices.BroadcastMessage("ResendR:R");
+                }
                 String[] igo = allres.split("R");
                 String[] irons = igo[1].split(",");
                 String[] gunps = igo[2].split(",");

@@ -584,7 +584,8 @@ public class PlayScreen implements Screen {
             else if (data[0].equals("Resources")){
                 System.out.println("Data 1:" + data[1]);
                 if (data[1].length()<21){
-                    game.playServices.BroadcastMessage("ResendR");
+                    System.out.println("request resources from play");
+                    game.playServices.BroadcastMessage("ResendR:");
                 }
                 else {
                     resourceManager.getResourceString(data[1]);

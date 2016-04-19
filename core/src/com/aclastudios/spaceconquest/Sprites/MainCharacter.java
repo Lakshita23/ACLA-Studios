@@ -105,16 +105,21 @@ public class MainCharacter extends Sprite {
     private float characterSize =  25/ SpaceConquest.PPM;
     private boolean inEnemyZone = false;
     private ArrayList<Integer> killedBy = new ArrayList<Integer>();
-    private Sound sound;
+    private Sound fire;
+    private Sound imbafire;
+    private Music sumo;
+    private long id;
 
-    Music music;
+
 
     public MainCharacter(World world,PlayScreen screen, String SpriteName){
         super(screen.getAtlas().findRegion(SpriteName));
         this.screen = screen;
         this.world = world;
         map =screen.getMap();
-        sound = Gdx.audio.newSound(Gdx.files.internal("sounds/fireball.mp3"));
+        imbafire = Gdx.audio.newSound(Gdx.files.internal("sounds/imbafireball.mp3"));
+        fire = Gdx.audio.newSound(Gdx.files.internal("sounds/fireball.wav"));
+        sumo = Gdx.audio.newMusic(Gdx.files.internal("sounds/sumo_mode.wav"));
         // initializing variables for animation:
         currentState = State.STANDING;
         previousState = State.STANDING;
@@ -152,9 +157,6 @@ public class MainCharacter extends Sprite {
         setToDestroy = false;
         destroyed = false;
         deathCount = 0;
-
-        music = Gdx.audio.newMusic(Gdx.files.internal("sounds/walk.mp3"));
-
     }
 
     public void defineCharacter(){
@@ -173,7 +175,6 @@ public class MainCharacter extends Sprite {
 
             }
         }
-//        bdef.position.set(150,150); //temp set position
         bdef.type = BodyDef.BodyType.DynamicBody;
         b2body = world.createBody(bdef);
 
@@ -218,6 +219,7 @@ public class MainCharacter extends Sprite {
         this.playerHP = (playerHP>maxHp?maxHp:playerHP);
     }
     public void defineBuffCharacter(){
+        sumo.play();
         iron_storage-=valueForBuff;
         gun_powder_storage-=valueForBuff;
         oil_storage-=valueForBuff;
@@ -392,13 +394,17 @@ public class MainCharacter extends Sprite {
     public float[] fire(){
         if(!buffMode) {
             fireCount += 1;
+            fire.play();
         }else{
             IFCount+=1;
+            imbafire.play();
         }
         ammunition-=1;
         float[] s = {b2body.getPosition().x,b2body.getPosition().y};
+        Sound sound;
+
         FireBall f = new FireBall(screen, s[0], s[1], lastXPercent,
-                lastYPercent, (buffMode)?buffRadius:radius, false, screen.getUserID(), buffMode,sound);
+                lastYPercent, (buffMode)?buffRadius:radius, false, screen.getUserID(), buffMode);
 
         fireballs.add(f);
 //        System.out.println("ammunition left: "+ ammunition);

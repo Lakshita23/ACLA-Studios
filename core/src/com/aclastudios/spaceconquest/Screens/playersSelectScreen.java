@@ -69,10 +69,10 @@ public class playersSelectScreen implements Screen {
 
     @Override
     public void show() {
-        if (AssetLoader.gameMusic != null) {
-            AssetLoader.gameMusic.stop();
-            AssetLoader.disposeSFX();
-        }
+//        if (AssetLoader.gameMusic != null) {
+//            AssetLoader.gameMusic.stop();
+//            AssetLoader.disposeSFX();
+//        }
         //AssetLoader.menuMusic.play();
 
         batch = new SpriteBatch();

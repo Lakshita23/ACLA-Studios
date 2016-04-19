@@ -39,11 +39,13 @@ public class MainCharacter extends Sprite {
     private int knapsackCount = 0;
     private int additionalWeight = 0;
     private int threshold = 5;
-    private float defaultRadius = 13/ SpaceConquest.PPM;
+    private float defaultRadius = 11/ SpaceConquest.PPM;
 
-    private float radius = 13/ SpaceConquest.PPM;
+    private float radius = 11/ SpaceConquest.PPM;
     private int charScore;
     private float playerHP = 10;
+    private int maxHp = 10;
+    private int defaultMaxHp = 10;
 
     private Array<FireBall> fireballs;
     private int fireCount;
@@ -59,6 +61,7 @@ public class MainCharacter extends Sprite {
 
     // for animating the sprite
     private boolean boostPressed = false;
+
     private enum State { STANDING, RUNNING, DASHING };
     private State currentState;
     private State previousState;
@@ -71,7 +74,7 @@ public class MainCharacter extends Sprite {
     private int buffWeight = 10;
     private float buffRadius = 25/ SpaceConquest.PPM;
     private boolean enableBuff = false;
-    private int valueForBuff = 10;
+    private int valueForBuff = 1;
     private int buffCoolDown = 30;
 
     //potentially useless
@@ -96,7 +99,7 @@ public class MainCharacter extends Sprite {
     private float jetpack_time;
     private float default_jetpack_time = 6;
     private int jpLevel = 1;
-
+    private float characterSize =  25/ SpaceConquest.PPM;
     private boolean inEnemyZone = false;
     private ArrayList<Integer> killedBy = new ArrayList<Integer>();
 
@@ -129,7 +132,7 @@ public class MainCharacter extends Sprite {
 
         defineCharacter();
         character = new TextureRegion(getTexture(), getRegionX() + 200, getRegionY(), 200, 200);
-        setBounds(0, 0, 25/ SpaceConquest.PPM, 25/ SpaceConquest.PPM);
+        setBounds(0, 0, characterSize,characterSize);
         setRegion(character);
         fireballs = new Array<FireBall>();
         fireCount = 0;
@@ -168,6 +171,7 @@ public class MainCharacter extends Sprite {
         FixtureDef fdef = new FixtureDef();
         CircleShape shape = new CircleShape();
         shape.setRadius(defaultRadius);
+
         xSpeedPercent = 0;
         ySpeedPercent = 0;
         //Collision Bit
@@ -200,7 +204,9 @@ public class MainCharacter extends Sprite {
         Array<Fixture> fix = b2body.getFixtureList();
         Shape shape = fix.get(0).getShape();
         shape.setRadius(radius);
-        this.playerHP = (playerHP>20?20:playerHP);
+//        setScale(characterSize/(buffRadius));
+        setScale(1);
+        this.playerHP = (playerHP>maxHp?maxHp:playerHP);
     }
     public void defineBuffCharacter(){
         iron_storage-=valueForBuff;
@@ -216,13 +222,15 @@ public class MainCharacter extends Sprite {
         Array<Fixture> fix = b2body.getFixtureList();
         Shape shape = fix.get(0).getShape();
         shape.setRadius(buffRadius);
-        this.playerHP = 100;
-        Hud.updateknapscore(iron_count+gun_powder_count+oil_count, oil_storage, iron_storage, gun_powder_storage);
+        setScale(buffRadius/defaultRadius);
+        this.playerHP = ((((this.playerHP+5)*5)>100)?100:(this.playerHP+5)*5);
+        Hud.updateknapscore(iron_count + gun_powder_count + oil_count, oil_storage, iron_storage, gun_powder_storage);
     }
     public void update(float dt){
         stateTime += dt;
         buffTimer += dt;
-        if (playerHP<20){
+        maxHp = 10 + 5*(iron_storage+oil_storage+gun_powder_storage)/9;
+        if (playerHP<maxHp){
             playerHP+=0.01;
         }
         if (inEnemyZone){
@@ -230,7 +238,7 @@ public class MainCharacter extends Sprite {
             if (playerHP<=0){
                 inEnemyZone=false;
                 dead();
-                playerHP=20;
+                playerHP=maxHp;
             }
         }
 
@@ -257,7 +265,7 @@ public class MainCharacter extends Sprite {
             last_y_coord = b2body.getPosition().y;
             setPosition(last_x_coord - getWidth() / 2, last_y_coord - getHeight() / 2);
             setRegion(getFrame(dt));
-            setScale(getCharacterScale());
+//            setScale(getCharacterScale());
             //System.out.println("My weight is " + additionalWeight);
         }
 
@@ -364,7 +372,7 @@ public class MainCharacter extends Sprite {
                         | SpaceConquest.CHARACTER_BIT;
                 fix.get(0).setFilterData(filter);
             }
-            setScale(getCharacterScale());
+//            setScale(getCharacterScale());
         }
     }
 
@@ -397,7 +405,7 @@ public class MainCharacter extends Sprite {
         additionalWeight = (buffMode?buffWeight:0);
         knapsackCount = 0;
         radius = defaultRadius;
-
+        playerHP = ((playerHP>maxHp)?playerHP:maxHp);
         //storing the resource and converting them into valued item
         iron_storage+=iron_count;
         gun_powder_storage+=gun_powder_count;
@@ -406,13 +414,13 @@ public class MainCharacter extends Sprite {
         gun_powder_count=0;
         oil_count = 0;
 
-        if(iron_storage>(ammoLevel*10) && gun_powder_storage>(ammoLevel*10)){
+        if(iron_storage>(ammoLevel*2) && gun_powder_storage>(ammoLevel*2)){
             ammoLevel+=1;
         }
-        if(oil_storage>(jpLevel*10))
+        if(oil_storage>(jpLevel*2))
             jpLevel+=1;
         ammunition = 20 + ammoLevel*15;
-        jetpack_time = (float) (jpLevel*2.0);
+        jetpack_time = default_jetpack_time+(float) (jpLevel*2.0);
 
         if(iron_storage>valueForBuff&&gun_powder_storage>valueForBuff&&oil_storage>valueForBuff){
             enableBuff = true;
@@ -437,19 +445,20 @@ public class MainCharacter extends Sprite {
         fix.get(0).setFilterData(filter);
     }
 
-    public float getCharacterScale() {
-
-        return ((float)1+ (additionalWeight *scale));
-    }
+//    public float getCharacterScale() {
+//
+//        return ((float)1+ (additionalWeight *scale));
+//    }
     public void dead(){
         iron_count = 0;
         gun_powder_count = 0;
         oil_count = 0;
         setToDestroy = true;
-        radius=13/ SpaceConquest.PPM;
+        radius=defaultRadius;
         additionalWeight = 0;
         knapsackCount = 0;
         Hud.updateknapscore(iron_count+gun_powder_count+oil_count, oil_storage, iron_storage, gun_powder_storage);
+        redefineCharacter();
     }
 
     public boolean isDestroyed() {
@@ -499,7 +508,7 @@ public class MainCharacter extends Sprite {
         playerHP-=(imbaOrNot?10:4);
         if (playerHP<=0){
             dead();
-            playerHP=20;
+            playerHP=maxHp;
         }
     }
     public float getHP(){

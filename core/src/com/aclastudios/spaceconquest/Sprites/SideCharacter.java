@@ -54,9 +54,10 @@ public class SideCharacter extends Sprite{
     private Animation running;
     private float stateTimer;
     private float weight;
-    private float radius = 13/ SpaceConquest.PPM;
-    private float scale = (float) (1.0/10);
 
+    private float radius = 11/ SpaceConquest.PPM;
+    private float scale = (float) (1.0/20);
+    private float characterSize =  25/ SpaceConquest.PPM;
     //private int charWeight;
     //private int charScore;
     public SideCharacter(World world, PlayScreen screen, int ID, String spriteName){
@@ -72,7 +73,7 @@ public class SideCharacter extends Sprite{
         running =new Animation(0.2f, frames);
         defineCharacter();
         character = new TextureRegion(getTexture(), getRegionX() + 200, getRegionY(), 200, 200);
-        setBounds(0, 0, 25/ SpaceConquest.PPM, 25/ SpaceConquest.PPM);
+        setBounds(0, 0, characterSize, characterSize);
         setRegion(character);
         fireballs = new Array<FireBall>();
 
@@ -172,10 +173,10 @@ public class SideCharacter extends Sprite{
                 fireballs.removeValue(ball, true);
         }
     }
-    public float getCharacterScale() {
-
-        return ((float)1+ (radius/10));
-    }
+//    public float getCharacterScale() {
+//
+//        return ((float)(2*radius/characterSize));
+//    }
     public TextureRegion getFrame(float dt){
         currentState = getState();
 
@@ -230,7 +231,12 @@ public class SideCharacter extends Sprite{
             lastYPercent=yPercent;
             lastXPercent = xPercent;
         }
-        setScale(getCharacterScale());
+        if(radius!=this.radius) {
+            System.out.println("********old radius = " + this.radius + "new radius = "+ radius +"*************");
+            setScale((radius<this.radius)?1:radius/this.radius);
+//            setSize(2*radius,2*radius);
+        }
+        this.radius = radius;
         Array<Fixture> fix = b2body.getFixtureList();
         Shape shape = fix.get(0).getShape();
         shape.setRadius(radius);

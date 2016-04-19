@@ -399,7 +399,8 @@ public class PlayScreen implements Screen {
                     ":" + mainCharacter.getLastXPercent() + ":" + mainCharacter.getLastYPercent() + ":" +
                     mainCharacter.getFireCount() + ":" +mainCharacter.b2body.getLinearVelocity().x +
                     ":"+mainCharacter.b2body.getLinearVelocity().y +":"+mainCharacter.getIFCount());
-            System.out.println("finished sending character's coordinate");
+            System.out.println("x and y velocity is "+mainCharacter.b2body.getLinearVelocity().x+ " "+
+                    mainCharacter.b2body.getLinearVelocity().y);
 
         }catch (Exception e){
             System.out.println("error while sending message");
@@ -594,79 +595,78 @@ public class PlayScreen implements Screen {
                 public void run() {
                     // Your crashing code here
 
-
-            if (data[0].equals("0") || data[0].equals("1") || data[0].equals("2")|| data[0].equals("3")|| data[0].equals("4")|| data[0].equals("5")) {
-                System.out.println("received enemies's coordinate");
-                String[] position = data.clone();
-                positionvalues.put(Integer.parseInt(data[0]), position);
-                System.out.println("finished updating ");
-            }
-            else if (data[0].equals("Serverpoints") && userID==0){
-                System.out.println("received points update from other players");
-                addscore(data[1], Integer.parseInt(data[2]));
-                System.out.println(data[0]+":"+data[1]+":"+data[2]);
-            }
-            else if (data[0].equals("UpdateScoreAll")){
-                System.out.println("received point update from server");
-                Hud.updatescore(Integer.parseInt(data[1]), Integer.parseInt(data[2]));
-            }
-//            else if (data[0].equals("fire")){
-//                FireBall f = new FireBall(this, Float.parseFloat(data[2]),
-//                        Float.parseFloat(data[3]), Float.parseFloat(data[4]), Float.parseFloat(data[5]),true);
-//                networkFireballs.add(f);
-//            }
-            else if (data[0].equals("Time")){
-                System.out.println("received time update");
-                time = Integer.parseInt(data[1]);
-            }
-            else if (data[0].equals("Resources")){
-                System.out.println("Data 1:" + data[1]);
-                if (data[1].length()<21){
-                    game.playServices.BroadcastMessage("ResendR");
-                }
-                else {
-                    resourceManager.getResourceString(data[1]);
-                    resourceManager.generateResources();
-                }
-            }
-            else if (data[0].equals("ResendR")){
-                if (userID==0){
-                    game.playServices.BroadcastMessage("Resources:"+resourceManager.coordinatesR());
-                }
-            }
-            else if (data[0].equals("Delete")){
-                System.out.println("delete resource"+data[2]+" "+data[3]);
-                if (data[1].equals("Iron"))
-                    resourceManager.delIron(Integer.parseInt(data[2]), Float.parseFloat(data[3]));
-                else if (data[1].equals("GunPowder"))
-                    resourceManager.delGunPowder(Integer.parseInt(data[2]), Float.parseFloat(data[3]));
-                else if (data[1].equals("Oil"))
-                    resourceManager.delOil(Integer.parseInt(data[2]), Float.parseFloat(data[3]));
-            }
-            else if (data[0].equals("Generate")) {
-                System.out.println("generate resources" + data[1] +" "+data[2] + " "+data[3]);
-                try {
-                    if (data[1].equals("Iron")) {
-                        System.out.println("generate iron");
-                        resourceManager.addIron(Float.parseFloat(data[2]), Float.parseFloat(data[3]));
+                    if (data[0].equals("0") || data[0].equals("1") || data[0].equals("2")|| data[0].equals("3")|| data[0].equals("4")|| data[0].equals("5")) {
+                        System.out.println("received enemies's coordinate");
+                        String[] position = data.clone();
+                        positionvalues.put(Integer.parseInt(data[0]), position);
+                        System.out.println("finished updating ");
                     }
-                    else if (data[1].equals("GunPowder")) {
-                        System.out.println("generate gunpowder");
-                        resourceManager.addGunPowder(Float.parseFloat(data[2]), Float.parseFloat(data[3]));
+                    else if (data[0].equals("Serverpoints") && userID==0){
+                        System.out.println("received points update from other players");
+                        addscore(data[1], Integer.parseInt(data[2]));
+                        System.out.println(data[0]+":"+data[1]+":"+data[2]);
                     }
-                    else if (data[1].equals("Oil")) {
-                        System.out.println("generate oil");
-                        resourceManager.addOil(Float.parseFloat(data[2]), Float.parseFloat(data[3]));
+                    else if (data[0].equals("UpdateScoreAll")){
+                        System.out.println("received point update from server");
+                        Hud.updatescore(Integer.parseInt(data[1]), Integer.parseInt(data[2]));
                     }
-                }
-                catch (Exception e){
-                    System.out.println("resource crash");
-                    e.printStackTrace();
-                }
-            }
-            else if (data[0].equals("KillBonus")){
-                hud.addkill();
-            }
+        //            else if (data[0].equals("fire")){
+        //                FireBall f = new FireBall(this, Float.parseFloat(data[2]),
+        //                        Float.parseFloat(data[3]), Float.parseFloat(data[4]), Float.parseFloat(data[5]),true);
+        //                networkFireballs.add(f);
+        //            }
+                    else if (data[0].equals("Time")){
+                        System.out.println("received time update");
+                        time = Integer.parseInt(data[1]);
+                    }
+                    else if (data[0].equals("Resources")){
+                        System.out.println("Data 1:" + data[1]);
+                        if (data[1].length()<21){
+                            game.playServices.BroadcastMessage("ResendR");
+                        }
+                        else {
+                            resourceManager.getResourceString(data[1]);
+                            resourceManager.generateResources();
+                        }
+                    }
+                    else if (data[0].equals("ResendR")){
+                        if (userID==0){
+                            game.playServices.BroadcastMessage("Resources:"+resourceManager.coordinatesR());
+                        }
+                    }
+                    else if (data[0].equals("Delete")){
+                        System.out.println("delete resource"+data[2]+" "+data[3]);
+                        if (data[1].equals("Iron"))
+                            resourceManager.delIron(Integer.parseInt(data[2]), Float.parseFloat(data[3]));
+                        else if (data[1].equals("GunPowder"))
+                            resourceManager.delGunPowder(Integer.parseInt(data[2]), Float.parseFloat(data[3]));
+                        else if (data[1].equals("Oil"))
+                            resourceManager.delOil(Integer.parseInt(data[2]), Float.parseFloat(data[3]));
+                    }
+                    else if (data[0].equals("Generate")) {
+                        System.out.println("generate resources" + data[1] +" "+data[2] + " "+data[3]);
+                        try {
+                            if (data[1].equals("Iron")) {
+                                System.out.println("generate iron");
+                                resourceManager.addIron(Float.parseFloat(data[2]), Float.parseFloat(data[3]));
+                            }
+                            else if (data[1].equals("GunPowder")) {
+                                System.out.println("generate gunpowder");
+                                resourceManager.addGunPowder(Float.parseFloat(data[2]), Float.parseFloat(data[3]));
+                            }
+                            else if (data[1].equals("Oil")) {
+                                System.out.println("generate oil");
+                                resourceManager.addOil(Float.parseFloat(data[2]), Float.parseFloat(data[3]));
+                            }
+                        }
+                        catch (Exception e){
+                            System.out.println("resource crash");
+                            e.printStackTrace();
+                        }
+                    }
+                    else if (data[0].equals("KillBonus")){
+                        hud.addkill();
+                    }
                 }
             });
 

@@ -103,8 +103,9 @@ public class MainCharacter extends Sprite {
     private boolean inEnemyZone = false;
     private ArrayList<Integer> killedBy = new ArrayList<Integer>();
     private Sound sound;
+    private Sound sumo;
 
-    Music music;
+
 
     public MainCharacter(World world,PlayScreen screen, String SpriteName){
         super(screen.getAtlas().findRegion(SpriteName));
@@ -112,6 +113,7 @@ public class MainCharacter extends Sprite {
         this.world = world;
         map =screen.getMap();
         sound = Gdx.audio.newSound(Gdx.files.internal("sounds/fireball.mp3"));
+        sumo = Gdx.audio.newSound(Gdx.files.internal("sounds/sumo_mode.mp3"));
         // initializing variables for animation:
         currentState = State.STANDING;
         previousState = State.STANDING;
@@ -149,9 +151,6 @@ public class MainCharacter extends Sprite {
         setToDestroy = false;
         destroyed = false;
         deathCount = 0;
-
-        music = Gdx.audio.newMusic(Gdx.files.internal("sounds/walk.mp3"));
-
     }
 
     public void defineCharacter(){
@@ -212,6 +211,7 @@ public class MainCharacter extends Sprite {
         this.playerHP = (playerHP>20?20:playerHP);
     }
     public void defineBuffCharacter(){
+        sumo.play();
         iron_storage-=valueForBuff;
         gun_powder_storage-=valueForBuff;
         oil_storage-=valueForBuff;

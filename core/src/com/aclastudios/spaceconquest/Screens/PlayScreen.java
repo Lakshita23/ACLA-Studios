@@ -428,7 +428,7 @@ public class PlayScreen implements Screen {
     //render
     @Override
     public void render(float delta) {
-//        try {
+        try {
             if (hud.isTimeUp() == true) {
                 music.stop();
                 int len = game.multiplayerSessionInfo.mParticipants.size();
@@ -527,10 +527,10 @@ public class PlayScreen implements Screen {
                 hud.setTime(time);
             }
 
-//        }catch (Exception e){
-//            System.out.println("error in render");
-//            System.out.println(e.getMessage());
-//        }
+        }catch (Exception e){
+            System.out.println("error in render");
+            System.out.println(e.getMessage());
+        }
     }
 
     @Override

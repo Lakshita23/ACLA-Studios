@@ -36,6 +36,6 @@ public interface PlayServices {
 
     public void setScreen(PlayScreen screen);
 
-    public boolean checkhost();
+    public boolean checkhost(int serverID);
 
 }

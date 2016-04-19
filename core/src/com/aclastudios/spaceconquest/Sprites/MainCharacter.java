@@ -102,6 +102,7 @@ public class MainCharacter extends Sprite {
 
     private boolean inEnemyZone = false;
     private ArrayList<Integer> killedBy = new ArrayList<Integer>();
+    private Sound sound;
 
     Music music;
 
@@ -110,7 +111,7 @@ public class MainCharacter extends Sprite {
         this.screen = screen;
         this.world = world;
         map =screen.getMap();
-
+        sound = Gdx.audio.newSound(Gdx.files.internal("sounds/fireball.mp3"));
         // initializing variables for animation:
         currentState = State.STANDING;
         previousState = State.STANDING;
@@ -389,7 +390,7 @@ public class MainCharacter extends Sprite {
         ammunition-=1;
         float[] s = {b2body.getPosition().x,b2body.getPosition().y};
         FireBall f = new FireBall(screen, s[0], s[1], lastXPercent,
-                lastYPercent, (buffMode)?buffRadius:radius, false, screen.getUserID(), buffMode);
+                lastYPercent, (buffMode)?buffRadius:radius, false, screen.getUserID(), buffMode,sound);
 
         fireballs.add(f);
 //        System.out.println("ammunition left: "+ ammunition);

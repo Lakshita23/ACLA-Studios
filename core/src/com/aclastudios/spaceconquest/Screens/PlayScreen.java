@@ -53,6 +53,7 @@ import java.util.HashMap;
 public class PlayScreen implements Screen {
 //    private Controller controller;
     private int userID;
+    private int serverID;
     private String[] spriteName = {"PYRO", "DAACTAR"};
     private int numOfPlayers = 2;
 
@@ -123,6 +124,7 @@ public class PlayScreen implements Screen {
         this.game = game;
         this.gsm = gsm;
         this.userID=0;
+        this.serverID=0;
         this.numOfPlayers = 2;
         this.time = 300;
         //uncomment this
@@ -247,14 +249,15 @@ public class PlayScreen implements Screen {
         //Setscreen in androidLauncher
         //uncomment this
         game.playServices.setScreen(this);
-        if (this.userID==0){
+        if (this.userID==serverID){
             server=new Server(game);
         }
         show();
     }
     @Override
     public void show() {
-        if (userID==0) {
+        MenuScreen.menuMusic.stop();
+        if (userID==serverID) {
             resourceManager.generateResources();
         }
         System.out.println("SHOW CALLED");
@@ -311,12 +314,15 @@ public class PlayScreen implements Screen {
     }
 
     public void update(float dt){
-//        if (!game.playServices.checkhost()){
-//            game.playServices.leaveRoom();
-//            game.multiplayerSessionInfo.mState = game.multiplayerSessionInfo.ROOM_NULL;
-//            dispose();
-//            gsm.set(new MenuScreen(game, gsm));
-//        }
+        if (!game.playServices.checkhost(this.serverID)){
+            if (this.userID!=this.serverID) {
+                this.serverID++;
+            }
+            if (this.userID==this.serverID){
+                server=new Server(game);
+                server.setRnBteamScore(hud.getRedScore(),hud.getBlueScore());
+            }
+        }
         //input updates
         handleInput(dt);
 
@@ -422,7 +428,7 @@ public class PlayScreen implements Screen {
     //render
     @Override
     public void render(float delta) {
-        try {
+//        try {
             if (hud.isTimeUp() == true) {
                 music.stop();
                 int len = game.multiplayerSessionInfo.mParticipants.size();
@@ -512,7 +518,7 @@ public class PlayScreen implements Screen {
 
 //            controller.render();
 
-            if (userID==0){
+            if (userID==serverID){
                 System.out.println("updating time");
                 try {
                     game.playServices.BroadcastUnreliableMessage("Time:" + hud.getTime());
@@ -521,10 +527,10 @@ public class PlayScreen implements Screen {
                 hud.setTime(time);
             }
 
-        }catch (Exception e){
-            System.out.println("error in render");
-            System.out.println(e.getMessage());
-        }
+//        }catch (Exception e){
+//            System.out.println("error in render");
+//            System.out.println(e.getMessage());
+//        }
     }
 
     @Override
@@ -601,7 +607,7 @@ public class PlayScreen implements Screen {
                 positionvalues.put(Integer.parseInt(data[0]), position);
                 System.out.println("finished updating ");
             }
-            else if (data[0].equals("Serverpoints") && userID==0){
+            else if (data[0].equals("Serverpoints") && userID==serverID){
                 System.out.println("received points update from other players");
                 addscore(data[1], Integer.parseInt(data[2]));
                 System.out.println(data[0]+":"+data[1]+":"+data[2]);
@@ -630,7 +636,7 @@ public class PlayScreen implements Screen {
                 }
             }
             else if (data[0].equals("ResendR")){
-                if (userID==0){
+                if (userID==serverID){
                     game.playServices.BroadcastMessage("Resources:"+resourceManager.coordinatesR());
                 }
             }
@@ -690,6 +696,9 @@ public class PlayScreen implements Screen {
     }
     public int getUserID() {
         return userID;
+    }
+    public int getServerID() {
+        return serverID;
     }
 
     public float getRateOfFire() {

@@ -50,7 +50,7 @@ public class Hud implements Disposable {
     private PlayScreen screen;
 
     public Hud(SpriteBatch sb,PlayScreen screen){
-        worldTimer = 2;
+        worldTimer = 300;
         timeCount = 0;
         RedScore = 0;
         BlueScore = 0;

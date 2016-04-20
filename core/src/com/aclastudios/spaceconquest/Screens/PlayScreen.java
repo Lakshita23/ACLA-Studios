@@ -7,6 +7,7 @@ import com.aclastudios.spaceconquest.SpaceConquest;
 import com.aclastudios.spaceconquest.Sprites.SideCharacter;
 import com.aclastudios.spaceconquest.Sprites.MainCharacter;
 import com.aclastudios.spaceconquest.Sprites.ResourceManager;
+import com.aclastudios.spaceconquest.Sprites.Space;
 import com.aclastudios.spaceconquest.Scores.Server;
 import com.aclastudios.spaceconquest.Tools.B2WorldCreator;
 import com.aclastudios.spaceconquest.Tools.HealthBar;
@@ -61,6 +62,7 @@ public class PlayScreen implements Screen {
     Texture mapTexture;
     private OrthographicCamera gamecam;
     private Viewport gamePort;
+    private Viewport viewport;
     private Hud hud;
 
     private float rateOfFire = (float) 0.3;
@@ -144,8 +146,11 @@ public class PlayScreen implements Screen {
         //Game map and Game View
         //camera of the map
         gamecam  = new OrthographicCamera();
+        gamecam.setToOrtho(false,SpaceConquest.V_WIDTH/ SpaceConquest.PPM,SpaceConquest.V_HEIGHT/SpaceConquest.PPM);
+        camera = new OrthographicCamera();
         //create a FitViewport to maintain virtual aspect ratio
         gamePort = new FitViewport(SpaceConquest.V_WIDTH/SpaceConquest.PPM,SpaceConquest.V_HEIGHT/SpaceConquest.PPM,gamecam);
+        viewport = new FitViewport(SpaceConquest.V_WIDTH, SpaceConquest.V_HEIGHT, camera);
 
         //create our game HUD for scores/timers/level info
         hud = new Hud(game.batch,this);
@@ -202,7 +207,7 @@ public class PlayScreen implements Screen {
         //Set background image
         //touchpadSkin.add("touchBackground", new Texture("touchpad/touchBackground.png"));
         //Set knob image
-        touchpadSkin.add("touchKnob", new Texture("touchpad/touchKnob_arrows.png"));
+        touchpadSkin.add("touchKnob", new Texture("touchpad/knob.png"));
         //Create TouchPad Style
         touchpadStyle = new TouchpadStyle();
         //Create Drawable's from TouchPad skin
@@ -213,9 +218,9 @@ public class PlayScreen implements Screen {
 //        touchpadStyle.background = touchBackground;
         touchpadStyle.knob = touchKnob;
         //Create new TouchPad with the created style
-        touchpad = new Touchpad(10/ SpaceConquest.PPM, touchpadStyle);
+        touchpad = new Touchpad(10, touchpadStyle);
         //setBounds(x,y,width,height)
-        touchpad.setBounds(0, 0, 70/SpaceConquest.PPM, 70/SpaceConquest.PPM);
+        touchpad.setBounds(0, 0, 70, 70);
 
         buttonsAtlas = new TextureAtlas("button/button.pack");
         buttonSkin = new Skin(buttonsAtlas);
@@ -235,13 +240,13 @@ public class PlayScreen implements Screen {
                 ,null,null,null,null);
         imbFire.disabled = buttonSkin.newDrawable(new TextureRegionDrawable(new TextureRegion(orange)),tintColor);
         button = new ImageButton(imbFire);
-        button.setBounds(0,0,40/ SpaceConquest.PPM,40/ SpaceConquest.PPM);
+        button.setBounds(0,0,40,40);
 
         ImageButton.ImageButtonStyle imbBoost = new ImageButton.ImageButtonStyle(new TextureRegionDrawable(new TextureRegion(boost_up)), new TextureRegionDrawable(new TextureRegion(boost_down))
                 ,null,null,null,null);
         imbBoost.disabled = buttonSkin.newDrawable(new TextureRegionDrawable(new TextureRegion(boost_down)),tintColor);
         jetpack_Button = new ImageButton(imbBoost);
-        jetpack_Button.setBounds(0,0,40/ SpaceConquest.PPM,40/ SpaceConquest.PPM);
+        jetpack_Button.setBounds(0,0,40,40);
 
         ImageButton.ImageButtonStyle imbSumo = new ImageButton.ImageButtonStyle(new TextureRegionDrawable(new TextureRegion(sumo_up)), new TextureRegionDrawable(new TextureRegion(sumo_down))
                 ,null,null,null,null);
@@ -249,11 +254,11 @@ public class PlayScreen implements Screen {
 //        buffMode_Button = new ImageButton(new TextureRegionDrawable(new TextureRegion(orange)), new TextureRegionDrawable(new TextureRegion(red)));
         buffMode_Button = new ImageButton(imbSumo);
         buffMode_Button.setDisabled(true);
-        buffMode_Button.setBounds(0, 0, 40 / SpaceConquest.PPM, 40 / SpaceConquest.PPM);
+        buffMode_Button.setBounds(0, 0, 40, 40);
         //table.add(button);
 
         //Create a Stage and add TouchPad
-        stage = new Stage(gamePort, game.batch);
+        stage = new Stage(viewport, game.batch);
 
         stage.addActor(touchpad);
         stage.addActor(button);
@@ -334,7 +339,7 @@ public class PlayScreen implements Screen {
 
     public void update(float dt){
         if (!game.playServices.checkhost(this.serverID)){
-            if (this.userID!=this.serverID) {
+            if (this.userID!=this.serverID && serverID<numOfPlayers-1) {
                 this.serverID++;
             }
             if (this.userID==this.serverID){
@@ -432,17 +437,25 @@ public class PlayScreen implements Screen {
             e.printStackTrace();
         }
 
+        button.setPosition(camera.position.x + viewport.getWorldWidth() / 4 + 40, camera.position.y - viewport.getWorldHeight() / 2 + 10);
+        jetpack_Button.setPosition(camera.position.x+viewport.getWorldWidth() / 4 ,camera.position.y-viewport.getWorldHeight()/2+10);
+        buffMode_Button.setPosition(camera.position.x+viewport.getWorldWidth() / 4 + 20,camera.position.y-viewport.getWorldHeight()/2+30);
+//        touchpad.setPosition((gamecam.position.x-(gamePort.getWorldWidth() / 2)),
+//                (gamecam.position.y-gamePort.getWorldHeight()/2));
+        touchpad.setPosition((camera.position.x - (viewport.getWorldWidth() / 2)) + 10 ,
+                (camera.position.y - viewport.getWorldHeight() / 2) + (10));
+
         //gamecam updates
         gamecam.update();
         renderer.setView(gamecam); //render only what the gamecam can see
 
-        button.setPosition(gamecam.position.x + gamePort.getWorldWidth() / 4 + 40 / SpaceConquest.PPM, gamecam.position.y - gamePort.getWorldHeight() / 2 + 10 / SpaceConquest.PPM);
-        jetpack_Button.setPosition(gamecam.position.x+gamePort.getWorldWidth() / 4 ,gamecam.position.y-gamePort.getWorldHeight()/2+10/ SpaceConquest.PPM);
-        buffMode_Button.setPosition(gamecam.position.x+gamePort.getWorldWidth() / 4 + 20 / SpaceConquest.PPM,gamecam.position.y-gamePort.getWorldHeight()/2+30/ SpaceConquest.PPM);
-//        touchpad.setPosition((gamecam.position.x-(gamePort.getWorldWidth() / 2)),
-//                (gamecam.position.y-gamePort.getWorldHeight()/2));
-        touchpad.setPosition((gamecam.position.x-(gamePort.getWorldWidth() / 2))+(10/ SpaceConquest.PPM),
-                (gamecam.position.y-gamePort.getWorldHeight()/2)+(10/ SpaceConquest.PPM));
+//        button.setPosition(gamecam.position.x + gamePort.getWorldWidth() / 4 + 40 / SpaceConquest.PPM, gamecam.position.y - gamePort.getWorldHeight() / 2 + 10 / SpaceConquest.PPM);
+//        jetpack_Button.setPosition(gamecam.position.x+gamePort.getWorldWidth() / 4 ,gamecam.position.y-gamePort.getWorldHeight()/2+10/ SpaceConquest.PPM);
+//        buffMode_Button.setPosition(gamecam.position.x+gamePort.getWorldWidth() / 4 + 20 / SpaceConquest.PPM,gamecam.position.y-gamePort.getWorldHeight()/2+30/ SpaceConquest.PPM);
+////        touchpad.setPosition((gamecam.position.x-(gamePort.getWorldWidth() / 2)),
+////                (gamecam.position.y-gamePort.getWorldHeight()/2));
+//        touchpad.setPosition((gamecam.position.x-(gamePort.getWorldWidth() / 2))+(10/ SpaceConquest.PPM),
+//                (gamecam.position.y-gamePort.getWorldHeight()/2)+(10/ SpaceConquest.PPM));
 
     }
     //render
@@ -474,7 +487,7 @@ public class PlayScreen implements Screen {
             Gdx.gl.glClearColor(0, 0, 0, 1); //clear colour
             Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT); //clear the screen
             //backgroup and character image (Used for test)
-            game.batch.setProjectionMatrix(gamecam.combined); //only render what the camera can see
+//            game.batch.setProjectionMatrix(gamecam.combined); //only render what the camera can see
 
             //render the map
             renderer.render();
@@ -526,7 +539,7 @@ public class PlayScreen implements Screen {
 
 
             //render our Box2DDebugLines
-            b2dr.render(world, gamecam.combined);
+//            b2dr.render(world, gamecam.combined);
 
             //Join/Combine hud camera to game batch
             game.batch.setProjectionMatrix(hud.stage.getCamera().combined);
@@ -558,6 +571,7 @@ public class PlayScreen implements Screen {
 
         System.out.println("updating");
         gamePort.update(width, height);
+        viewport.update(width, height);
     }
 
 

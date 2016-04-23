@@ -19,7 +19,8 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
 /**
- * Created by Lakshita on 4/19/2016.
+Short tutorial of game to help players understand the concept.
+ Tutorial shows game map, resource collection area, weapons and abilities of player via image swipes.
  */
 public class TutorialScreen implements Screen {
     private Viewport viewport;
@@ -49,27 +50,24 @@ public class TutorialScreen implements Screen {
         BUTTON_HEIGHT = 20;
         count = 0;
 
-        imgstylenext = new ImageButton.ImageButtonStyle();
-        imgstylenext.imageUp = new TextureRegionDrawable(new TextureRegion(new Texture("tutorial/next-notpressed.png")));
-        imgstylenext.imageDown = new TextureRegionDrawable(new TextureRegion(new Texture("tutorial/next-pressed.png")));
-        imgstyleprevious = new ImageButton.ImageButtonStyle();
-        imgstyleprevious.imageUp = new TextureRegionDrawable(new TextureRegion(new Texture("tutorial/back-notpressed.png")));
-        imgstyleprevious.imageDown = new TextureRegionDrawable(new TextureRegion(new Texture("tutorial/back-pressed.png")));
+        //Initialise next and prev button image styles
+        imgstylenext = AssetLoader.imgStyleNext;
+        imgstyleprevious = AssetLoader.imgStylePrev;
 
         next = new ImageButton(imgstylenext);
         previous = new ImageButton(imgstyleprevious);
+
         show();
     }
     @Override
     public void show() {
-
         batch = new SpriteBatch();
         background = new Texture(AssetLoader.images[0]);
-
         background.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
         sprite = new Sprite(background);
         sprite.setSize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 
+        //Add imageButtons to Stage
         next.setSize(this.BUTTON_WIDTH, this.BUTTON_HEIGHT);
         next.setPosition(370, 0);
         stage.addActor(next);
@@ -78,18 +76,20 @@ public class TutorialScreen implements Screen {
         previous.setPosition(5, 0);
         stage.addActor(previous);
 
+        //Creating button click actions
         next.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-
-                if (count<5) {
+                if (count<5) {  //show upto 6 images explaining the game
+                    //count keeps record of image number
                     count++;
+                    //update background image based on button click
                     background = new Texture(AssetLoader.images[count]);
                     background.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
                     sprite = new Sprite(background);
                     sprite.setSize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
                 }
-                else{
+                else{   //goto Menu Screen once player has viewed all 6 images
                     gsm.set(new MenuScreen(game, gsm));
                 }
             }
@@ -98,8 +98,9 @@ public class TutorialScreen implements Screen {
         previous.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                if (count>0) {
+                if (count>0) {  //disable back button if viewing first image
                     count--;
+                    //update background to previous image
                     background = new Texture(AssetLoader.images[count]);
                     background.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
                     sprite = new Sprite(background);

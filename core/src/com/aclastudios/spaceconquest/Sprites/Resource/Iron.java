@@ -9,6 +9,7 @@ import com.badlogic.gdx.physics.box2d.FixtureDef;
 
 public class Iron extends Resources {
 
+    //Initialise resource texture from atlas
     public Iron(PlayScreen screen, float x, float y) {
         super(screen,"iron_ore", x, y);
     }
@@ -25,11 +26,11 @@ public class Iron extends Resources {
         shape.setRadius(8/ SpaceConquest.PPM);
 
         //Collision Bit
-        fdef.filter.categoryBits = SpaceConquest.IRON_BIT; //what category is this fixture
-        fdef.filter.maskBits = SpaceConquest.OBSTACLE_BIT
+        fdef.filter.categoryBits = SpaceConquest.IRON_BIT; //Fixture Category
+        fdef.filter.maskBits = SpaceConquest.OBSTACLE_BIT  //Collidable objects fixtures
                 |SpaceConquest.MAIN_CHARACTER_BIT
                 |SpaceConquest.CHARACTER_BIT
-                |SpaceConquest.OBJECTIVE_BIT; //What can the character collide with?
+                |SpaceConquest.OBJECTIVE_BIT;
 
 
         //Body

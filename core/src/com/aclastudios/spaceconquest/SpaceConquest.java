@@ -15,12 +15,13 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 public class SpaceConquest extends Game {
 	public static final int V_WIDTH = 400; //Virtual screen width of the game
 	public static final int V_HEIGHT =208; //Virtual screen height of the game
-	public static final float PPM = 2;
-	public static final float MAP_SCALE = (float) 0.7;
+	public static final float PPM = 2; //scaling the game screen
+	public static final float MAP_SCALE = (float) 0.7; //scaling the map
 	public static SpriteBatch batch;
 
 	private GameScreenManager gsm;
 
+	//Collision bit are 2^n, because they will be put through or operation to check for collision
 	public static final short OBSTACLE_BIT = 1;
 	public static final short MAIN_CHARACTER_BIT = 2;
 	public static final short IRON_BIT = 4;
@@ -52,12 +53,10 @@ public class SpaceConquest extends Game {
 		batch = new SpriteBatch();
 		gsm = new GameScreenManager();
 		gsm.push(new MenuScreen(this, gsm));
-		//setScreen(new PlayScreen(this)); //Allow the setting of screen
 	}
 
 	@Override
 	public void render () {
-		//super.render(); //delegate all rendering to the PlayScreen
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 		gsm.render(Gdx.graphics.getDeltaTime());
 	}

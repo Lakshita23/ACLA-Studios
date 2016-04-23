@@ -31,6 +31,9 @@ public class WorldContactListener implements ContactListener {
         depositSound = Gdx.audio.newSound(Gdx.files.internal("sounds/deposit.mp3"));
     }
 
+    //when the two body first touch, begin contact is triggered
+    //within this method, collision bit of the two body are or together and put into a switch case
+    //where different collision cosequences will take place
     @Override
     public void beginContact(Contact contact) {
         Fixture fixA = contact.getFixtureA();
@@ -238,20 +241,6 @@ public class WorldContactListener implements ContactListener {
                 }else{
                     ((MainCharacter) fixB.getUserData()).setInEnemyZone(true);
                 }
-//                if(hp<=1) {
-//                    int team = 0;
-//                    if (game.multiplayerSessionInfo.mId_num < screen.getNumOfPlayers() / 2) {
-//                        team = team + game.multiplayerSessionInfo.mParticipants.size() / 2;
-//                    } else {
-//                        team = team - game.multiplayerSessionInfo.mParticipants.size() / 2;
-//                    }
-//                    System.out.println("team from contact listener: " + team);
-//                    if (game.multiplayerSessionInfo.mId_num != 0) {
-//                        game.playServices.MessagetoServer("Serverpoints:" + team + ":" + 50);
-//                    } else {
-//                        screen.addscore(team + "", 50);
-//                    }
-//                }
                 break;
         }
     }
@@ -263,6 +252,7 @@ public class WorldContactListener implements ContactListener {
 
         int cDef = fixA.getFilterData().categoryBits | fixB.getFilterData().categoryBits;
         switch (cDef) {
+            //when main character is out of the enemy zone, his health stops decreasing
             case SpaceConquest.ENEMY_STATION_BIT | SpaceConquest.MAIN_CHARACTER_BIT:
                 if (fixA.getFilterData().categoryBits == SpaceConquest.MAIN_CHARACTER_BIT) {
                     ((MainCharacter) fixA.getUserData()).setInEnemyZone(false);

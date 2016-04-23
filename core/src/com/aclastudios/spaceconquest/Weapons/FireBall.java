@@ -29,6 +29,7 @@ public class FireBall extends Sprite {
     float distance;
     Body b2body;
     int firerID;
+
     public FireBall(PlayScreen screen, float x, float y, float xSpd,float ySpd,float radius, boolean enemyFire, int firerID, boolean imba){
         this.xSpd = xSpd;
         this.ySpd = ySpd;
@@ -44,6 +45,9 @@ public class FireBall extends Sprite {
         }
         fireAnimation = new Animation(0.2f, frames);
         setRegion(fireAnimation.getKeyFrame(0));
+
+        //imba refers to imbalance in gaming
+        //if firer is sumo mode, fireball will be imba and sprite will be larger
         if(imba) {
             setBounds(x, y, 18 / SpaceConquest.PPM, 18 / SpaceConquest.PPM);
             defineIMBAFireBall();
@@ -54,12 +58,11 @@ public class FireBall extends Sprite {
         }
     }
 
+    //define normal fireball
     public void defineFireBall(){
         BodyDef bdef = new BodyDef();
         bdef.position.set(getX() + (this.xSpd *(distance))/ SpaceConquest.PPM, getY() + (this.ySpd*distance)/ SpaceConquest.PPM);
         bdef.type = BodyDef.BodyType.DynamicBody;
-        bdef.bullet = true;
-        //if(!world.isLocked())
         b2body = world.createBody(bdef);
 
         FixtureDef fdef = new FixtureDef();
@@ -82,13 +85,12 @@ public class FireBall extends Sprite {
         b2body.setLinearVelocity(new Vector2((this.xSpd * 1000), (this.ySpd * 1000)));
     }
 
+    //this method is called if firer is in sumo mode
     public void defineIMBAFireBall(){
 
         BodyDef bdef = new BodyDef();
         bdef.position.set(getX() + (this.xSpd *(distance))/ SpaceConquest.PPM, getY() + (this.ySpd*distance)/ SpaceConquest.PPM);
         bdef.type = BodyDef.BodyType.DynamicBody;
-        bdef.bullet = true;
-        //if(!world.isLocked())
         b2body = world.createBody(bdef);
 
         FixtureDef fdef = new FixtureDef();
@@ -111,6 +113,7 @@ public class FireBall extends Sprite {
         b2body.setLinearVelocity(new Vector2((this.xSpd * 1000), (this.ySpd * 1000)));
     }
 
+    //updates the animation and position of the sprite according to the body
     public void update(float dt){
         stateTime += dt;
         setRegion(fireAnimation.getKeyFrame(stateTime, true));
@@ -119,12 +122,9 @@ public class FireBall extends Sprite {
             world.destroyBody(b2body);
             destroyed = true;
         }
-//        if(b2body.getLinearVelocity().y > 2f)
-//            b2body.setLinearVelocity(b2body.getLinearVelocity().x, 100f);
-//        if((fireRight && b2body.getLinearVelocity().x < 0) || (!fireRight && b2body.getLinearVelocity().x > 0))
-//            setToDestroy();
     }
 
+    //setToDestroy and isDestroyed is used when fireball collides with a character
     public void setToDestroy(){
         setToDestroy = true;
     }
@@ -133,7 +133,7 @@ public class FireBall extends Sprite {
         return destroyed;
     }
 
-
+    //used to get the firer id so that server can know who does the kill
     public int getFirerID() {
         return firerID;
     }

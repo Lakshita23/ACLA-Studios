@@ -20,17 +20,17 @@ import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.BooleanArray;
 
+//this class creates the body of the world
 public class B2WorldCreator {
-    public final String[] area = {"Left Spaceship","Right Spaceship","Left Deposit Point", "Right Deposit Point"};
     public B2WorldCreator(PlayScreen screen) {
         World world = screen.getWorld();
         TiledMap map = screen.getMap();
-        //Temp create here first but later we will move this to the individual class
         BodyDef bdef = new BodyDef(); //Define what the body consist of
-        PolygonShape shape = new PolygonShape(); //Shape for the fixture
         FixtureDef fdef = new FixtureDef(); //Define the fixture
         Body body; //The Body
         Array<Body> cuerpos = new Array<Body>();
+
+        //creates the obstacle layer
         for (MapObject object : map.getLayers().get(1).getObjects().getByType(PolylineMapObject.class)) {
 
             float vertices[] = ((PolylineMapObject) object).getPolyline()
@@ -44,6 +44,8 @@ public class B2WorldCreator {
             cuerpos.add(world.createBody(bdef));
             cuerpos.get(cuerpos.size - 1).createFixture(shape2, 0);
         }
+
+        //creates your spacestation layer where you will deposit your collected resource and replenish your supply
         for (MapObject object : map.getLayers().get(4+(screen.getUserID()/(screen.getNumOfPlayers()/2))).getObjects().getByType(PolylineMapObject.class)) {
             float vertices[] = ((PolylineMapObject) object).getPolyline()
                     .getTransformedVertices();
@@ -57,38 +59,19 @@ public class B2WorldCreator {
             //DynamicBody affected by gravity forces and velocity
             //StaticBody dont move, not affected by anything
             //KinematicBody Not affected by gravity but affected by forces and velocity
+
             bdef.position.set(0,0);
             body = world.createBody(bdef); // Add body to the world
             fdef.shape = shape2;
-            //fdef.isSensor = true;
+
+            //Spacestation can collide with main character
             fdef.filter.categoryBits = SpaceConquest.STATION_BIT;
             fdef.filter.maskBits = SpaceConquest.MAIN_CHARACTER_BIT;
-            body.createFixture(fdef); // Add fixture to the body
 
+            body.createFixture(fdef); // Add fixture to the body
         }
-//        for (MapLayer layer : map.getLayers()) {
-//            if (layer.getName().matches("Left Deposit Point")) {
-//                for(MapObject object:layer.getObjects().getByType(PolylineMapObject.class)) {
-//                    float vertices[] = ((PolylineMapObject) object).getPolyline().getTransformedVertices();
-//                    for (int i = 0; i < vertices.length; i++) {
-//                        vertices[i] *= SpaceConquest.MAP_SCALE / SpaceConquest.PPM;
-//                    }
-//                    ChainShape shape2 = new ChainShape();
-//                    shape2.createChain(vertices);
-//
-//                    bdef.type = BodyDef.BodyType.StaticBody;
-//                    //DynamicBody affected by gravity forces and velocity
-//                    //StaticBody dont move, not affected by anything
-//                    //KinematicBody Not affected by gravity but affected by forces and velocity
-//                    bdef.position.set(0, 0);
-//                    body = world.createBody(bdef); // Add body to the world
-//                    fdef.shape = shape2;
-//                    //fdef.isSensor = true;
-//                    fdef.filter.categoryBits = SpaceConquest.OBJECTIVE_BIT;
-//                    fdef.filter.maskBits = SpaceConquest.MAIN_CHARACTER_BIT;
-//                }
-//            }
-//        }
+
+        //create the enemy zone where main character's health will decrease when he collides
         for (MapObject object : map.getLayers().get(2+(screen.getUserID()/(screen.getNumOfPlayers()/2))).getObjects().getByType(PolylineMapObject.class)) {
             float vertices[] = ((PolylineMapObject) object).getPolyline()
                     .getTransformedVertices();
@@ -99,13 +82,12 @@ public class B2WorldCreator {
             shape2.createChain(vertices);
 
             bdef.type = BodyDef.BodyType.StaticBody;
-            //DynamicBody affected by gravity forces and velocity
-            //StaticBody dont move, not affected by anything
-            //KinematicBody Not affected by gravity but affected by forces and velocity
             bdef.position.set(0,0);
             body = world.createBody(bdef); // Add body to the world
             fdef.shape = shape2;
             fdef.isSensor = true;
+
+            //enemy station can collide with main character
             fdef.filter.categoryBits = SpaceConquest.ENEMY_STATION_BIT;
             fdef.filter.maskBits = SpaceConquest.MAIN_CHARACTER_BIT;
             body.createFixture(fdef).setUserData("SpaceStation"); // Add fixture to the body

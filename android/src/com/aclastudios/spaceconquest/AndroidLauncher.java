@@ -42,13 +42,14 @@ public class AndroidLauncher extends AndroidApplication implements GameHelperLis
 	final static int RC_WAITING_ROOM = 10002;
 	final static int RC_LEADER = 10003;
 	private static final int RC_SIGN_IN = 9001;
+	private String leaderboardID = "CgkI8bDhycAZEAIQAQ";
 
-
+	//GooglePlayFunctions
 	public GameHelper gameHelper;
 	public GoogleApiClient mGoogleApiClient;
 	private GPSListeners mGooglePlayListeners;
+	//Core Functions
 	public MultiplayerSessionInfo MultiplayerSession;
-
 	private PlayScreen screen;
 
 
@@ -56,9 +57,8 @@ public class AndroidLauncher extends AndroidApplication implements GameHelperLis
 	@Override
 	protected void onCreate (Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		//Set log level to debug to let all gdx messages through
-		this.setLogLevel(LOG_DEBUG);
 
+		//Initialize gameHelper
 		if (gameHelper == null) {
 			gameHelper = new GameHelper(this, GameHelper.CLIENT_GAMES);
 			gameHelper.enableDebugLog(true);
@@ -77,6 +77,7 @@ public class AndroidLauncher extends AndroidApplication implements GameHelperLis
 			mGooglePlayListeners = new GPSListeners(mGoogleApiClient,this);
 		}
 
+		//Initialize the core functions
 		AndroidApplicationConfiguration config = new AndroidApplicationConfiguration();
 		config.useImmersiveMode = true;
 		initialize(new SpaceConquest(this, MultiplayerSession), config);
@@ -92,7 +93,7 @@ public class AndroidLauncher extends AndroidApplication implements GameHelperLis
 	@Override
 	public void onStop(){
 		super.onStop();
-//		gameHelper.onStop();
+		gameHelper.onStop();
 	}
 
 	@Override
@@ -107,6 +108,7 @@ public class AndroidLauncher extends AndroidApplication implements GameHelperLis
 			case RC_INVITATION_INBOX:
 				// we got the result from the "select invitation" UI (invitation inbox). We're
 				// ready to accept the selected invitation:
+				//NOT USED
 				handleInvitationInboxResult(responseCode, intent);
 				break;
 			case RC_WAITING_ROOM:
@@ -131,6 +133,7 @@ public class AndroidLauncher extends AndroidApplication implements GameHelperLis
 				gameHelper.onActivityResult(requestCode, responseCode, intent);
 				break;
 			case RC_LEADER:
+				// we got the result from the "leader room" UI.
 				if (responseCode == Activity.RESULT_CANCELED){
 					MultiplayerSession.mState= MultiplayerSession.ROOM_MENU;
 				}
@@ -151,8 +154,6 @@ public class AndroidLauncher extends AndroidApplication implements GameHelperLis
 				}
 			});
 		} catch (final Exception ex) {
-			Gdx.app.log("MainActivity", "Log in failed: " + ex.getMessage() + ".");
-
 		}
 	}
 	@Override
@@ -165,8 +166,6 @@ public class AndroidLauncher extends AndroidApplication implements GameHelperLis
 					}
 				});
 			} catch (final Exception ex) {
-				Gdx.app.log("MainActivity", "Log out failed: " + ex.getMessage() + ".");
-
 			}
 		}
 
@@ -174,29 +173,15 @@ public class AndroidLauncher extends AndroidApplication implements GameHelperLis
 
 	@Override
 	public void submitScoreGPGS(int score) {
-		Games.Leaderboards.submitScore(gameHelper.getApiClient(), "CgkI8bDhycAZEAIQAQ", score);
-
-	}
-
-	@Override
-	public void unlockAchievementGPGS(String achievementId) {
-		Games.Achievements.unlock(gameHelper.getApiClient(), achievementId);
+		//Sends the score to the googleplay server for it to be stored
+		Games.Leaderboards.submitScore(gameHelper.getApiClient(), leaderboardID, score);
 	}
 
 	@Override
 	public void getLeaderboardGPGS() {
+		//Call GPGS leaderboard function (It has a build in UI)
 		if (gameHelper.isSignedIn()) {
-			startActivityForResult(Games.Leaderboards.getLeaderboardIntent(gameHelper.getApiClient(), "CgkI8bDhycAZEAIQAQ"), RC_LEADER);
-		}
-		else if (!gameHelper.isConnecting()) {
-			loginGPGS();
-		}
-	}
-
-	@Override
-	public void getAchievementsGPGS() {
-		if (gameHelper.isSignedIn()) {
-			startActivityForResult(Games.Achievements.getAchievementsIntent(gameHelper.getApiClient()), RC_LEADER);
+			startActivityForResult(Games.Leaderboards.getLeaderboardIntent(gameHelper.getApiClient(), leaderboardID), RC_LEADER);
 		}
 		else if (!gameHelper.isConnecting()) {
 			loginGPGS();
@@ -211,19 +196,17 @@ public class AndroidLauncher extends AndroidApplication implements GameHelperLis
 	public void onSignInSucceeded() {
 	}
 
-
 	@Override
 	public void startQuickGame(int num) {
-		// quick-start a game with 1 randomly selected opponent
+		// quick-start a game with "num" randomly selected opponent
 		if (gameHelper.isSignedIn()) {
 			//Set multiplayer flag to be true so that game screen will choose to create multiplayer world instead
 			final int MIN_OPPONENTS = num, MAX_OPPONENTS = num;
+			//Create the GPGS room
 			Bundle autoMatchCriteria = RoomConfig.createAutoMatchCriteria(MIN_OPPONENTS,MAX_OPPONENTS, 0);
 			RoomConfig.Builder rtmConfigBuilder = RoomConfig.builder(mGooglePlayListeners);
 			rtmConfigBuilder.setMessageReceivedListener(this);
 			rtmConfigBuilder.setRoomStatusUpdateListener(mGooglePlayListeners);
-
-
 			rtmConfigBuilder.setAutoMatchCriteria(autoMatchCriteria);
 			Games.RealTimeMultiplayer.create(mGoogleApiClient, rtmConfigBuilder.build());
 		}
@@ -233,9 +216,86 @@ public class AndroidLauncher extends AndroidApplication implements GameHelperLis
 	}
 
 	@Override
+	// Leave the room.
+	public void leaveRoom() {
+		if (MultiplayerSession.mRoomId != null) {
+			Games.RealTimeMultiplayer.leave(this.mGoogleApiClient, this.mGooglePlayListeners, MultiplayerSession.mRoomId);
+			//Reset all the values upon leaving room
+			MultiplayerSession.mRoomId=null;
+			MultiplayerSession.mName=null;
+			MultiplayerSession.mParticipants=null;
+			MultiplayerSession.mId=null;
+		} else {
+			MultiplayerSession.mState= MultiplayerSession.ROOM_MENU;
+		}
+	}
+
+	//Sends ReliableMessage to all players
+	public void BroadcastMessage(String message){
+		byte[] bytes = message.getBytes(Charset.forName("UTF-8"));
+		for (Object o : MultiplayerSession.mParticipants) {
+			Participant p = (Participant) o;
+			Games.RealTimeMultiplayer.sendReliableMessage(mGoogleApiClient, null, bytes,
+					MultiplayerSession.mRoomId, p.getParticipantId());
+
+		}
+	}
+
+	//Sends UnreliableMessage to all players
+	public void BroadcastUnreliableMessage(String message){
+		byte[] bytes = message.getBytes(Charset.forName("UTF-8"));
+		Games.RealTimeMultiplayer.sendUnreliableMessageToOthers(mGoogleApiClient, bytes,
+				MultiplayerSession.mRoomId);
+
+	}
+
+	//Sends ReliableMessage to the client that is acting as the server
+	public void MessagetoServer(String message){
+		byte[] bytes = message.getBytes(Charset.forName("UTF-8"));
+		Participant p = (Participant) MultiplayerSession.mParticipants.get(screen.getServerID());
+		Games.RealTimeMultiplayer.sendReliableMessage(mGoogleApiClient, null, bytes,
+				MultiplayerSession.mRoomId, p.getParticipantId());
+	}
+
+	//Sends ReliableMessage to a particular client
+	public void MessagetoParticipant(int id, String message){
+		byte[] bytes = message.getBytes(Charset.forName("UTF-8"));
+		Participant p = (Participant) MultiplayerSession.mParticipants.get(id);
+		Games.RealTimeMultiplayer.sendReliableMessage(mGoogleApiClient, null, bytes,
+				MultiplayerSession.mRoomId, p.getParticipantId());
+	}
+
+	//Link the playScreen to this class so that screen functions can be called
+	@Override
+	public void setScreen(PlayScreen screen) {
+		this.screen = screen;
+	}
+
+	//Listens to incoming messages and calls the playScreen.MessageListener function (core),
+	@Override
+	public void onRealTimeMessageReceived(RealTimeMessage rtm) {
+		byte[] buf = rtm.getMessageData();
+		if (screen!=null) {
+			screen.MessageListener(buf);
+		}
+
+	}
+
+	//Check if the client is still in the room
+	@Override
+	public boolean checkhost(int serverID) {
+		Participant p = (Participant) MultiplayerSession.mParticipants.get(serverID);
+		return p.isConnectedToRoom();
+	}
+
+
+	//***************************Future Implementation (Phase 2) ***********************************
+
+
+	//Future Implementation (No invitation function yet) Phase 2
+	@Override
 	public void seeInvitations(){
 		if (gameHelper.isSignedIn()) {
-			MultiplayerSession.isServer=false;
 			Intent intent = Games.Invitations.getInvitationInboxIntent(mGoogleApiClient);
 			startActivityForResult(intent, RC_INVITATION_INBOX);
 			// show list of pending invitations
@@ -245,13 +305,11 @@ public class AndroidLauncher extends AndroidApplication implements GameHelperLis
 			loginGPGS();
 		}
 	}
-
-
+	//Future Implementation (No invitation function) Phase 2
 	@Override
 	public void sendInvitations(){
 		if (gameHelper.isSignedIn()) {
 			//Assign device as server and setup a socket to accept connections
-			MultiplayerSession.isServer=true;
 			// show list of inevitable players
 			//Choose from between 1 to 3 other opponents (APIclient,minOpponents, maxOpponents, boolean Automatch)
 			Intent intent = Games.RealTimeMultiplayer.getSelectOpponentsIntent(mGoogleApiClient, 1, 5);
@@ -261,37 +319,29 @@ public class AndroidLauncher extends AndroidApplication implements GameHelperLis
 			loginGPGS();
 		}
 	}
-
+	//Future Implementation (No achievement function) Phase 2
 	@Override
-	// Leave the room.
-	public void leaveRoom() {
-		Log.d(TAG, "Leaving room.");
-		if (MultiplayerSession.mRoomId != null) {
-			Games.RealTimeMultiplayer.leave(this.mGoogleApiClient, this.mGooglePlayListeners, MultiplayerSession.mRoomId);
-			MultiplayerSession.mRoomId=null;
-			MultiplayerSession.isServer=false;
-			MultiplayerSession.mName=null;
-			MultiplayerSession.mParticipants=null;
-			MultiplayerSession.mId=null;
-		} else {
-			MultiplayerSession.mState= MultiplayerSession.ROOM_MENU;
+	public void unlockAchievementGPGS(String achievementId) {
+		Games.Achievements.unlock(gameHelper.getApiClient(), achievementId);
+	}
+	//Future Implementation (No achievement function) Phase 2
+	@Override
+	public void getAchievementsGPGS() {
+		if (gameHelper.isSignedIn()) {
+			startActivityForResult(Games.Achievements.getAchievementsIntent(gameHelper.getApiClient()), RC_LEADER);
+		}
+		else if (!gameHelper.isConnecting()) {
+			loginGPGS();
 		}
 	}
 
-	// Handle the result of the "Select players UI" we launched when the user clicked the
-	// "Invite friends" button. We react by creating a room with those players.
 	private void handleSelectPlayersResult(int response, Intent data) {
 		if (response != Activity.RESULT_OK) {
-			Log.w(TAG, "*** select players UI cancelled, " + response);
 			MultiplayerSession.mState= MultiplayerSession.ROOM_MENU;
 			return;
 		}
-
-		Log.d(TAG, "Select players UI succeeded.");
-
 		// get the invitee list
 		final ArrayList<String> invitees = data.getStringArrayListExtra(Games.EXTRA_PLAYER_IDS);
-		Log.d(TAG, "Invitee count: " + invitees.size());
 
 		// get the automatch criteria
 		Bundle autoMatchCriteria = null;
@@ -300,11 +350,9 @@ public class AndroidLauncher extends AndroidApplication implements GameHelperLis
 		if (minAutoMatchPlayers > 0 || maxAutoMatchPlayers > 0) {
 			autoMatchCriteria = RoomConfig.createAutoMatchCriteria(
 					minAutoMatchPlayers, maxAutoMatchPlayers, 0);
-			Log.d(TAG, "Automatch criteria: " + autoMatchCriteria);
 		}
 
 		// create the room
-		Log.d(TAG, "Creating room...");
 		RoomConfig.Builder rtmConfigBuilder = RoomConfig.builder(mGooglePlayListeners);
 		rtmConfigBuilder.addPlayersToInvite(invitees);
 		rtmConfigBuilder.setMessageReceivedListener(this);
@@ -314,22 +362,13 @@ public class AndroidLauncher extends AndroidApplication implements GameHelperLis
 		}
 
 		Games.RealTimeMultiplayer.create(mGoogleApiClient, rtmConfigBuilder.build());
-		Log.d(TAG, "Room created, waiting for it to be ready...");
 	}
-
-
-	// Handle the result of the invitation inbox UI, where the player can pick an invitation
-	// to accept. We react by accepting the selected invitation, if any.
 	private void handleInvitationInboxResult(int response, Intent data) {
 		if (response != Activity.RESULT_OK) {
-			Log.w(TAG, "*** invitation inbox UI cancelled, " + response);
 			MultiplayerSession.mState= MultiplayerSession.ROOM_MENU;
 			return;
 		}
-
-		Log.d(TAG, "Invitation inbox UI succeeded.");
 		Invitation inv = data.getExtras().getParcelable(Multiplayer.EXTRA_INVITATION);
-
 		// accept invitation
 		acceptInviteToRoom(inv.getInvitationId());
 	}
@@ -337,61 +376,10 @@ public class AndroidLauncher extends AndroidApplication implements GameHelperLis
 	// Accept the given invitation.
 	void acceptInviteToRoom(String invId) {
 		// accept the invitation
-		Log.d(TAG, "Accepting invitation: " + invId);
 		RoomConfig.Builder roomConfigBuilder = RoomConfig.builder(mGooglePlayListeners);
 		roomConfigBuilder.setInvitationIdToAccept(invId)
 				.setMessageReceivedListener(this)
 				.setRoomStatusUpdateListener(mGooglePlayListeners);
 		Games.RealTimeMultiplayer.join(mGoogleApiClient, roomConfigBuilder.build());
-	}
-
-	//Sending messages
-	public void BroadcastMessage(String message){
-		byte[] bytes = message.getBytes(Charset.forName("UTF-8"));
-		for (Object o : MultiplayerSession.mParticipants) {
-			Participant p = (Participant) o;
-//			if (!p.getParticipantId().equals(MultiplayerSession.mId)) {
-				Games.RealTimeMultiplayer.sendReliableMessage(mGoogleApiClient, null, bytes,
-						MultiplayerSession.mRoomId, p.getParticipantId());
-//			}
-		}
-	}
-	public void BroadcastUnreliableMessage(String message){
-		byte[] bytes = message.getBytes(Charset.forName("UTF-8"));
-//		byte[] bytes = message.getBytes();
-		Games.RealTimeMultiplayer.sendUnreliableMessageToOthers(mGoogleApiClient, bytes,
-				MultiplayerSession.mRoomId);
-
-	}
-	public void MessagetoServer(String message){
-		byte[] bytes = message.getBytes(Charset.forName("UTF-8"));
-		Participant p = (Participant) MultiplayerSession.mParticipants.get(0);
-		Games.RealTimeMultiplayer.sendReliableMessage(mGoogleApiClient, null, bytes,
-				MultiplayerSession.mRoomId, p.getParticipantId());
-	}
-	public void MessagetoParticipant(int id, String message){
-		byte[] bytes = message.getBytes(Charset.forName("UTF-8"));
-		Participant p = (Participant) MultiplayerSession.mParticipants.get(id);
-		Games.RealTimeMultiplayer.sendReliableMessage(mGoogleApiClient, null, bytes,
-				MultiplayerSession.mRoomId, p.getParticipantId());
-	}
-
-	@Override
-	public void onRealTimeMessageReceived(RealTimeMessage rtm) {
-		byte[] buf = rtm.getMessageData();
-		if (screen!=null) {
-			screen.MessageListener(buf);
-		}
-
-	}
-	@Override
-	public void setScreen(PlayScreen screen) {
-		this.screen = screen;
-	}
-
-	@Override
-	public boolean checkhost(int serverID) {
-		Participant p = (Participant) MultiplayerSession.mParticipants.get(serverID);
-		return p.isConnectedToRoom();
 	}
 }

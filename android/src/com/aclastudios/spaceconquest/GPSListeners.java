@@ -22,12 +22,6 @@ public class GPSListeners implements RoomStatusUpdateListener, RoomUpdateListene
 		OnInvitationReceivedListener {
 
 	private String TAG = "SpaceConquest GPS listeners";
-
-	// // Request codes for the UIs that we show with startActivityForResult:
-	// final static int RC_SELECT_PLAYERS = 10000;
-	// final static int RC_INVITATION_INBOX = 10001;
-	// final static int RC_WAITING_ROOM = 10002;
-
 	private GoogleApiClient mGoogleApiClient;
 	private AndroidLauncher activity;
 
@@ -36,26 +30,8 @@ public class GPSListeners implements RoomStatusUpdateListener, RoomUpdateListene
 		this.activity = activity;
 	}
 
-	// Called when we get an invitation to play a game. We react by showing that to the user.
-	@Override
-	public void onInvitationReceived(Invitation invitation) {
-		// We got an invitation to play a game! So, store it in
-		// mIncomingInvitationId
-		// and show the popup on the screen.
-		activity.MultiplayerSession.mIncomingInvitationId = invitation.getInvitationId();
-		Toast.makeText(activity.getApplicationContext(),
-				invitation.getInviter().getDisplayName() + " is inviting you.", Toast.LENGTH_SHORT).show();
-		// Create a text pop-up for invitations
-	}
 
-	@Override
-	public void onInvitationRemoved(String invitationId) {
-		if (activity.MultiplayerSession.mIncomingInvitationId.equals(invitationId)) {
-			activity.MultiplayerSession.mIncomingInvitationId = null;
-			// Hide invitation pop up
-		}
-	}
-
+	// Called when someone joins the room
 	@Override
 	public void onJoinedRoom(int statusCode, Room room) {
 		Log.d(TAG, "onJoinedRoom(" + statusCode + ", " + room + ")");
@@ -64,7 +40,6 @@ public class GPSListeners implements RoomStatusUpdateListener, RoomUpdateListene
 			// showGameError();
 			return;
 		}
-
 		// show the waiting room UI
 		showWaitingRoom(room);
 	}
@@ -96,7 +71,7 @@ public class GPSListeners implements RoomStatusUpdateListener, RoomUpdateListene
 		ArrayList<String> participants = room.getParticipantIds();
 		Collections.sort(participants);
 		if (participants.get(0).equals(activity.MultiplayerSession.mId)) {
-			activity.MultiplayerSession.isServer = true;
+
 		}
 	}
 
@@ -114,8 +89,7 @@ public class GPSListeners implements RoomStatusUpdateListener, RoomUpdateListene
 		showWaitingRoom(room);
 	}
 
-	// Called when we are connected to the room. We're not ready to play yet! (maybe not everybody
-	// is connected yet).
+	// Called when we are connected to the room. We're not ready to play yet! (maybe not everybody is connected yet).
 	@Override
 	public void onConnectedToRoom(Room room) {
 		Log.d(TAG, "onConnectedToRoom.");
@@ -144,10 +118,7 @@ public class GPSListeners implements RoomStatusUpdateListener, RoomUpdateListene
 //		 showGameError();
 	}
 
-	// We treat most of the room update callbacks in the same way: we update our list of
-	// participants and update the display. In a real game we would also have to check if that
-	// change requires some action like removing the corresponding player avatar from the screen,
-	// etc.
+
 
 	@Override
 	public void onPeerDeclined(Room room, List<String> arg1) {
@@ -201,22 +172,17 @@ public class GPSListeners implements RoomStatusUpdateListener, RoomUpdateListene
 	void updateRoom(Room room) {
 		if (room.getParticipants() != null) {
 			this.activity.MultiplayerSession.mParticipants = room.getParticipants();
-
-
 		}
 		if (this.activity.MultiplayerSession.mParticipants != null) {
 		}
 	}
 
-	// Show the waiting room UI to track the progress of other players as they enter the
-	// room and get connected.
+	// Show the waiting room UI to track the progress of other players as they enter the room and get connected.
 	void showWaitingRoom(Room room) {
 		// minimum number of players required for our game
-		// For simplicity, we require everyone to join the game before we start it
-		// (this is signaled by Integer.MAX_VALUE).
+		//The game start when the minimum number of players is met
 		final int MIN_PLAYERS = Integer.MAX_VALUE;
 		Intent i = Games.RealTimeMultiplayer.getWaitingRoomIntent(mGoogleApiClient, room, MIN_PLAYERS);
-
 		// show waiting room UI
 		activity.startActivityForResult(i, AndroidLauncher.RC_WAITING_ROOM);
 	}
@@ -225,6 +191,29 @@ public class GPSListeners implements RoomStatusUpdateListener, RoomUpdateListene
 		switch (statusCode) {
 		case ConnectionResult.RESOLUTION_REQUIRED:
 			activity.gameHelper.beginUserInitiatedSignIn();
+		}
+	}
+
+
+	//***************************Future Implementation (Phase 2) ***********************************
+
+	// Called when we get an invitation to play a game. We react by showing that to the user.
+	@Override
+	public void onInvitationReceived(Invitation invitation) {
+		// We got an invitation to play a game! So, store it in
+		// mIncomingInvitationId
+		// and show the popup on the screen.
+		activity.MultiplayerSession.mIncomingInvitationId = invitation.getInvitationId();
+		Toast.makeText(activity.getApplicationContext(),
+				invitation.getInviter().getDisplayName() + " is inviting you.", Toast.LENGTH_SHORT).show();
+		// Create a text pop-up for invitations
+	}
+
+	@Override
+	public void onInvitationRemoved(String invitationId) {
+		if (activity.MultiplayerSession.mIncomingInvitationId.equals(invitationId)) {
+			activity.MultiplayerSession.mIncomingInvitationId = null;
+			// Hide invitation pop up
 		}
 	}
 

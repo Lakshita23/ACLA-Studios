@@ -257,39 +257,7 @@ public class SideCharacter extends Sprite{
 //        System.out.println("ammunition left: "+ ammunition);
         return s;
     }
-    /*
-    public float getySpeedPercent() {
-        return ySpeed;
-    }
 
-    public float getxSpeedPercent() {
-        return xSpeed;
-    }
-
-    public void setxSpeedPercent(float xSpeed) {
-        this.xSpeed = xSpeed;
-    }
-
-    public void setySpeedPercent(float ySpeed) {
-        this.ySpeed = ySpeed;
-    }
-
-    public Integer getAdditionalWeight() {
-        return charWeight;
-    }
-
-    public int getCharScore() {
-        return charScore;
-    }
-
-    public void increaseKnapSack(int charWeight) {
-        this.charWeight += charWeight;
-    }
-
-    public void setAdditionalWeight(int w){
-        this.charWeight=w;
-    }
-    */
 
     public float getxSpeedPercent() {
         return xSpeedPercent;

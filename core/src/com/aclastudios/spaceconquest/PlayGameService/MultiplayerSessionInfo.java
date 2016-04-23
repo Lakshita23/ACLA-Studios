@@ -3,11 +3,8 @@ package com.aclastudios.spaceconquest.PlayGameService;
 import java.util.ArrayList;
 
 
-/**
- * Storage class to store all information needed for google play services in
- * @author Wong
- *
- */
+// Storage class to store all information needed for google play services
+
 public class MultiplayerSessionInfo {
 	
 	public String mId;
@@ -18,11 +15,6 @@ public class MultiplayerSessionInfo {
 	public ArrayList<String> mParticipantsId;
 	public String mName;
 	public int mState=1000;
-
-
-	public boolean isServer;
-	public String serverAddress;
-	public int serverPort=0;
 
 	
 	public final int ROOM_NULL=1000;
@@ -42,11 +34,6 @@ public class MultiplayerSessionInfo {
 		mParticipants=null;
 		mState=ROOM_MENU;
 		mName = null;
-
-		isServer=false;
-		serverAddress=null;
-		serverPort=0;
-
 	}
 
 

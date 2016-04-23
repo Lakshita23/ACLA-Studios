@@ -2,7 +2,7 @@ package com.aclastudios.spaceconquest.PlayGameService;
 
 import com.aclastudios.spaceconquest.Screens.PlayScreen;
 
-
+//Interface to link android and core
 public interface PlayServices {
     public boolean getSignedInGPGS();
 

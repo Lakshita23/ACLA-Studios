@@ -632,7 +632,6 @@ public class PlayScreen implements Screen {
             Gdx.app.postRunnable(new Runnable() {
                 @Override
                 public void run() {
-                    // Your crashing code here
 
                     if (data[0].equals("0") || data[0].equals("1") || data[0].equals("2")|| data[0].equals("3")|| data[0].equals("4")|| data[0].equals("5")) {
                         System.out.println("received enemies's coordinate");

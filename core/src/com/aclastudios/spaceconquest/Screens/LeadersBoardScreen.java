@@ -11,14 +11,8 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 
 public class LeadersBoardScreen implements Screen {
 
-	private Stage stage;
-	private SpriteBatch batcher;
-	private Sprite sprite;
 	private SpaceConquest game;
 	private GameScreenManager gsm;
-
-	private float gameWidth;
-	private float gameHeight;
 
 	public LeadersBoardScreen(SpaceConquest game, GameScreenManager gsm) {
 		this.game = game;
@@ -33,7 +27,9 @@ public class LeadersBoardScreen implements Screen {
 	public void render(float delta) {
 		Gdx.gl.glClearColor(0, 0, 0, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+		//check state of the session
 		if (game.multiplayerSessionInfo.mState == game.multiplayerSessionInfo.ROOM_LEADER) {
+			//getLeaderboardGPGS function has a build in UI that is displayed when this method is called
 			game.playServices.getLeaderboardGPGS();
 		}
 		else if (game.multiplayerSessionInfo.mState == game.multiplayerSessionInfo.ROOM_MENU) {

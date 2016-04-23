@@ -15,39 +15,47 @@ import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
+
+// This class stores data relating to resources, time, and score and displays it at the top of the playscreen
 public class Hud implements Disposable {
     public Stage stage;
-    private Viewport viewport; //With the new viewport, when game world moves the hud stays the same
+    private Viewport viewport; // With the new viewport, when game world moves the hud stays the same
 
-    private Integer worldTimer;
-    private boolean timeUp; // true when the world timer reaches 0
-    private float timeCount;
-    private static Integer RedScore;
-    private static Integer BlueScore;
-
-    // New hud integers
+    // Resource values
     private static Integer oilScore;
     private static Integer gunpowderScore;
     private static Integer ironScore;
     private static Integer teamKnapsack;
+    // Gadget values
     private static Integer ammunition;
-    private static Integer kills;
     private static float jetpackTime;
+    // Personal kills value
+    private static Integer kills;
+    //Score Values
+    private static Integer RedScore;
+    private static Integer BlueScore;
+    // Time values
+    private Integer worldTimer;
+    private boolean timeUp; // true when the world timer reaches 0
+    private float timeCount;
 
-    private Label countdownLabel;
+    //Labels to display values
     private Label GameLabel;
     private Label BlueLabel;
     private Label resourcesLabel;
-    private Label gadgetsLabel;
-    private Label time;
-    private static Label BlueScoreLabel;
     private Label RedLabel;
+    private Label time;
+    private Label countdownLabel;
+    private static Label BlueScoreLabel;
     private static Label RedScoreLabel;
-    private boolean backuphud = false;
+
+    //Screen
+    private PlayScreen screen;
+    //others
+    private Integer width;
     float smallScale = (float) 0.75;
     float largeScale = (float) 1.25;
-    private Integer width;
-    private PlayScreen screen;
+    private boolean backuphud = false;
 
     public Hud(SpriteBatch sb,PlayScreen screen){
         worldTimer = 300;
@@ -64,16 +72,17 @@ public class Hud implements Disposable {
         kills = 0;
         this.screen = screen;
 
+        //set camera view
         viewport = new FitViewport(SpaceConquest.V_WIDTH,SpaceConquest.V_HEIGHT,new OrthographicCamera());
-        stage = new Stage(viewport, sb);
 
+        //Initialise the stage and table to organise the display of labels
+        stage = new Stage(viewport, sb);
         Table table = new Table(); //To organise the label
         table.top(); //Top-Align table
         table.setBounds(0, SpaceConquest.V_HEIGHT * (float) 3 / 4, SpaceConquest.V_WIDTH, SpaceConquest.V_HEIGHT / 4);
         //table.setFillParent(true); //Table is the size of the stage
 
         // backup HUD
-
         if (backuphud){
             countdownLabel = new Label(String.format("%03d", worldTimer), new Label.LabelStyle(new BitmapFont(Gdx.files.internal("fonts/visitor.fnt"), false), Color.WHITE));
             GameLabel = new Label("SPACE CONQUEST", new Label.LabelStyle(new BitmapFont(Gdx.files.internal("fonts/visitor.fnt"), false), Color.WHITE));
@@ -97,73 +106,39 @@ public class Hud implements Disposable {
             table.add(countdownLabel).expandX();
             table.add(BlueScoreLabel).expandX();
         } else {
-
             // Personal Knapsack
             resourcesLabel = new Label(String.format("oil: %2d gp: %2d iron: %2d\nAmmo: %03d Boost Time: %.1f\nkills: %2d",
                     oilScore, gunpowderScore, ironScore, ammunition, jetpackTime, kills), new Label.LabelStyle(new BitmapFont(Gdx.files.internal("fonts/visitor.fnt"), false), Color.WHITE));
-//            Label oilLabel = new Label(String.format("%3d", oilScore), new Label.LabelStyle(new BitmapFont(Gdx.files.internal("fonts/visitor.fnt"), false), Color.WHITE));
-//            Label gunpowder = new Label("gp: ", new Label.LabelStyle(new BitmapFont(Gdx.files.internal("fonts/visitor.fnt"), false), Color.WHITE));
-//            Label gunPowderLabel = new Label(String.format("%3d", gunpowderScore), new Label.LabelStyle(new BitmapFont(Gdx.files.internal("fonts/visitor.fnt"), false), Color.WHITE));
-//            Label iron = new Label("iron: ", new Label.LabelStyle(new BitmapFont(Gdx.files.internal("fonts/visitor.fnt"), false), Color.WHITE));
-//            Label ironLabel = new Label(String.format("%3d", ironScore), new Label.LabelStyle(new BitmapFont(Gdx.files.internal("fonts/visitor.fnt"), false), Color.WHITE));
-            //gadgetsLabel = new Label(String.format("Ammo: %03d Boost Time: %.1f", ammunition, jetpackTime), new Label.LabelStyle(new BitmapFont(Gdx.files.internal("fonts/visitor.fnt"), false), Color.WHITE));
 
             // Team Scores
             BlueScoreLabel = new Label(String.format("%03d | %03d", BlueScore, RedScore), new Label.LabelStyle(new BitmapFont(Gdx.files.internal("fonts/visitor.fnt"), false), Color.WHITE));
-//            RedScoreLabel = new Label(String.format("%03d", RedScore), new Label.LabelStyle(new BitmapFont(Gdx.files.internal("fonts/visitor.fnt"), false), Color.WHITE));
-//            Label divider = new Label(" | ", new Label.LabelStyle(new BitmapFont(Gdx.files.internal("fonts/visitor.fnt"), false), Color.WHITE));
 
             // Global data
             time  =new Label(String.format("time: %3d \nKnapsack: %3d/10", worldTimer, teamKnapsack), new Label.LabelStyle(new BitmapFont(Gdx.files.internal("fonts/visitor.fnt"), false), Color.WHITE));
-//            countdownLabel = new Label(String.format("%03d", worldTimer), new Label.LabelStyle(new BitmapFont(Gdx.files.internal("fonts/visitor.fnt"), false), Color.WHITE));
 
-            // scalings
+            // scaling of font size
             resourcesLabel.setFontScale(smallScale / 2);
-//            gadgetsLabel.setFontScale(smallScale / 2);
-//            oilLabel.setFontScale(smallScale);
-//            iron.setFontScale(smallScale);
-//            ironLabel.setFontScale(smallScale);
-//            gunpowder.setFontScale(smallScale);
-//            gunPowderLabel.setFontScale(smallScale);
             BlueScoreLabel.setFontScale(largeScale);
-//            divider.setFontScale(largeScale);
-//            RedScoreLabel.setFontScale(largeScale);
             time.setFontScale(smallScale/2);
-//            countdownLabel.setFontScale(smallScale);
-//            knapsack.setFontScale(smallScale);
-//            knapsackLabel.setFontScale(smallScale);
 
-
-            // adding to table
+            // adding labels to table
             table.add(resourcesLabel).width(width / 3).left().pad(0,10,0,60).expandX();
-//            table.add(oilLabel).width(width / 3);
-//            table.add(gunpowder).width(width/3).padLeft((float) 35);
-//            table.add(gunPowderLabel).width(width / 3);
-//            table.add(iron).width(width/2).padLeft((float) 35);
-//            table.add(ironLabel).width(width/3);
-
             table.add(BlueScoreLabel).expandX();
-//            table.add(divider);
-//            table.add(RedScoreLabel).padRight((float) 30);
-
             table.add(time).width(width).right().padRight(50).expandX();
-//            table.add(countdownLabel).width(width);
-//            table.row();
-//            table.add(gadgetsLabel).width(width / 3).left().pad(0,10,0,60).expandX();
+
         }
-
-
-
-
-
+        //add table to stage
         stage.addActor(table);
     }
     public void update(float dt,int ammo,float jpTime){
         ammunition=ammo;
         jetpackTime = jpTime;
         timeCount += dt;
+
+        //if the client is the server-client, it performs time reduction. Game time is controlled by the server
         if (screen.getUserID()==screen.getServerID()) {
-            if (timeCount >= 1) {
+            //If WorldTimer more than 0, reduce WorldTimer every second
+            if (timeCount >= 1) { //check if dt adds up to one, then reduce one timer
                 if (worldTimer > 0) {
                     worldTimer--;
                 } else {
@@ -175,9 +150,7 @@ public class Hud implements Disposable {
                     time.setText(String.format("time: %3d \nKnapsack: %3d/10", worldTimer, teamKnapsack));
                     resourcesLabel.setText(String.format("oil: %2d gp: %2d iron: %2d\nAmmo: %03d Jet Pack: %.1f\nKills: %3d", oilScore, gunpowderScore, ironScore, ammunition, jetpackTime,kills));
                 }
-//            gadgetsLabel.setText(String.format("Ammunition: %-3d Boost Time: %.1f", ammunition, jetpackTime));
-//            resourcesLabel.setText(String.format("Ammunition: %-3d Boost Time: %.1f", ammunition, jetpackTime));
-                timeCount = 0;
+                timeCount = 0; //reset counter once WorldTimer has been reduced
             }
         }
         else {
@@ -192,35 +165,37 @@ public class Hud implements Disposable {
             }
         }
     }
+
+    //Set the BlueScore and RedScore
     public static void updatescore(int redScore, int blueScore){
         BlueScore=blueScore;
         RedScore=redScore;
         BlueScoreLabel.setText(String.format("%03d | %03d", RedScore, BlueScore));
-//        RedScoreLabel.setText(String.format("%06d", RedScore));
     }
 
-
-    @Override
-    public void dispose() {
-        stage.dispose();
-    }
-
+    //set resources values
     public static void updateknapscore(int inp, int oil, int iron, int gunpowder) {
         teamKnapsack = inp;
         oilScore =oil;
         ironScore = iron;
         gunpowderScore = gunpowder;
     }
+
+    //set gadget values
     public static void updateGadget(int ammo,float jpTime){
         ammunition = ammo;
         jetpackTime = jpTime;
     }
 
+    //Check if WorldTime is 0
     public boolean isTimeUp() { return timeUp; }
 
+    //Set WorldTimer. Used by non-server clients when they get the time value from the server-client.
     public void setTime(int time){
         worldTimer=time;
     }
+
+    //get and add functions
     public int getTime(){
         return worldTimer;
     }
@@ -230,12 +205,16 @@ public class Hud implements Disposable {
     public int getkills(){
         return kills;
     }
-
     public int getRedScore(){
         return RedScore;
     }
     public int getBlueScore(){
         return BlueScore;
+    }
+
+    @Override
+    public void dispose() {
+        stage.dispose();
     }
 
 }

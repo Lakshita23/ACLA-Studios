@@ -16,6 +16,7 @@ public class WaitScreen implements Screen {
 	private SpaceConquest game;
 	private GameScreenManager gsm;
 
+	//Background
 	private SpriteBatch batch;
 	private Texture background;
 	private Sprite sprite;
@@ -28,6 +29,7 @@ public class WaitScreen implements Screen {
 
 	@Override
 	public void show() {
+		//initialising of background imae
 		batch = new SpriteBatch();
 		background = new Texture("darkscreen.png");
 		background.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
@@ -39,24 +41,23 @@ public class WaitScreen implements Screen {
 	public void render(float delta) {
 		Gdx.gl.glClearColor(0, 0, 0, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-
+		//render the background image
 		batch.begin();
 		sprite.draw(batch);
 		batch.end();
 
-		if ((game.multiplayerSessionInfo.mState == game.multiplayerSessionInfo.ROOM_PLAY))
-			//	&& (game.multiplayerSessionInfo.serverAddress != null)
-			//	&& (game.multiplayerSessionInfo.serverPort != 0))
-		{
-			// Create MMClient and connect to server
+		//Check state of the session
+		if ((game.multiplayerSessionInfo.mState == game.multiplayerSessionInfo.ROOM_PLAY)) {
 			try {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
+			//stop music of the menu screen in preparation to run new music in playScreen
 			MenuScreen.menuMusic.stop();
 			gsm.set(new PlayScreen(game, gsm));
 
 		} else if (game.multiplayerSessionInfo.mState == game.multiplayerSessionInfo.ROOM_MENU) {
+			//go back to menu screen
 			game.multiplayerSessionInfo.mState = game.multiplayerSessionInfo.ROOM_NULL;
 			gsm.set(new MenuScreen(game, gsm));
 		}

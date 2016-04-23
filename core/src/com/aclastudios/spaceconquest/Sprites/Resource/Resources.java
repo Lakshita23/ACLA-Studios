@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.World;
 
+/*Abstract Class to provide common structure for all resources*/
 public abstract class Resources extends Sprite {
     protected World world;
     protected PlayScreen screen;
@@ -21,7 +22,9 @@ public abstract class Resources extends Sprite {
         super(screen.getAtlas().findRegion(resourceName));
         this.world = screen.getWorld();
         this.screen = screen;
+        //Defines resource's position
         setPosition(x,y);
+        //Defines resource's size
         resource = new TextureRegion(getTexture(),0,0,16,16);
         setBounds(getX(),getY(),16/ SpaceConquest.PPM,16/ SpaceConquest.PPM);
         defineResources(x,y);
@@ -33,6 +36,7 @@ public abstract class Resources extends Sprite {
 
     public abstract void use(MainCharacter player);
 
+    //Updates and deletes if resource is destroyed
     public void update(float dt){
         if(toDestroy && !destroyed){
             world.destroyBody(body);
@@ -45,9 +49,13 @@ public abstract class Resources extends Sprite {
             super.draw(batch);
         }
     }
+
+    //Set to destroy resource
     public void destroy(){
         toDestroy = true;
     }
+
+    //Checks if resource is destroyed
     public boolean ifDestroyed(){
         return destroyed;
     }

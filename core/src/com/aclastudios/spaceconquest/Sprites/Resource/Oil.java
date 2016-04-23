@@ -7,11 +7,9 @@ import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.CircleShape;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 
-/**
- * Created by Lakshita on 3/27/2016.
- */
 public class Oil extends Resources {
 
+    //Initialise resource texture from atlas
     public Oil(PlayScreen screen, float x, float y) {
         super(screen,"oil_ore", x, y);
     }
@@ -28,11 +26,11 @@ public class Oil extends Resources {
         shape.setRadius(8/ SpaceConquest.PPM);
 
         //Collision Bit
-        fdef.filter.categoryBits = SpaceConquest.OIL_BIT; //what category is this fixture
-        fdef.filter.maskBits = SpaceConquest.OBSTACLE_BIT
+        fdef.filter.categoryBits = SpaceConquest.OIL_BIT; //Fixture Category
+        fdef.filter.maskBits = SpaceConquest.OBSTACLE_BIT //Collidable objects fixtures
                 |SpaceConquest.MAIN_CHARACTER_BIT
                 |SpaceConquest.CHARACTER_BIT
-                |SpaceConquest.OBJECTIVE_BIT; //What can the character collide with?
+                |SpaceConquest.OBJECTIVE_BIT;
 
 
         //Body

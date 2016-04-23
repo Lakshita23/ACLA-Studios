@@ -130,6 +130,9 @@ public class PlayScreen implements Screen {
         music.setLooping(false);
         music.play();
 
+        //this sound is for the jet pack
+        boostSound = Gdx.audio.newMusic(Gdx.files.internal("sounds/boost.wav"));
+
         //This rocket sound is played when Boost Button is pressed
         boostSound = Gdx.audio.newMusic(Gdx.files.internal("sounds/boost.wav"));
 
@@ -201,7 +204,7 @@ public class PlayScreen implements Screen {
         //set firebutton cooldown to 0
         coolDown = 0;
 
-        //Initialize Spawn Area
+        //Initialize Spawn Area : around center of the map
         for (MapLayer layer : map.getLayers()) {
             if (layer.getName().matches("resourceSpawningArea")) {
                 Array<RectangleMapObject> mo = layer.getObjects().getByType(RectangleMapObject.class);
@@ -216,7 +219,7 @@ public class PlayScreen implements Screen {
         //set world listener
         world.setContactListener(new WorldContactListener(this,game));
 
-        //initialise resource manager
+        //Initialise resource manager
         resourceManager = new ResourceManager(this, game, userID, x, y, width, height);
 
         //touchpad setup
@@ -309,10 +312,10 @@ public class PlayScreen implements Screen {
     @Override
     public void show() {
         MenuScreen.menuMusic.stop();
+        //Server creates the first set of resources and then broadcasts resource information to all players
         if (userID==serverID) {
             resourceManager.generateResources();
         }
-        System.out.println("SHOW CALLED");
     }
 
     //handles the input of the user
@@ -432,6 +435,7 @@ public class PlayScreen implements Screen {
             sideCharacter.update(dt);
         }
 
+        //Update resources to check if destroyed
         resourceManager.updateIron(dt);
         resourceManager.updateGunPowder(dt);
         resourceManager.updateOil(dt);
@@ -472,22 +476,21 @@ public class PlayScreen implements Screen {
     //render
     @Override
     public void render(float delta) {
+        //End game and transition to Game Over Screen when time is up
         try {
             //if time is up, update score and calculate which team is the winner
             if (hud.isTimeUp() == true) {
                 music.stop();
-                int len = game.multiplayerSessionInfo.mParticipants.size();
+                int len = game.multiplayerSessionInfo.mParticipants.size(); //Collect information from server regarding scores
                 int myId = game.multiplayerSessionInfo.mId_num;
                 int redScore = hud.getRedScore();
                 int blueScore = hud.getBlueScore();
                 int mykillScore = hud.getkills();
-                System.out.println("hud istimeup");
-                game.playServices.leaveRoom();
+                game.playServices.leaveRoom();  //close session and exit room
                 game.multiplayerSessionInfo.mState = game.multiplayerSessionInfo.ROOM_NULL;
-                game.playServices.submitScoreGPGS(hud.getkills());
-                System.out.println("close gps");
+                game.playServices.submitScoreGPGS(hud.getkills());  //submit score to server before exiting
                 game.multiplayerSessionInfo.mState = game.multiplayerSessionInfo.ROOM_MENU;
-                gsm.set(new GameOver(game, gsm, len, myId, redScore, blueScore, mykillScore));
+                gsm.set(new GameOver(game, gsm, len, myId, redScore, blueScore, mykillScore));  //goto gameOver screen to display result of the game
                 dispose();
 
             }
@@ -527,8 +530,8 @@ public class PlayScreen implements Screen {
                     System.out.println("error updating enemies coordinate");
                 }
             }
-
             //generate a each resource if the respective resource count is < 7
+            //Render resources: Iron, Gunpowder and Oil
             for (int i = 0; i < resourceManager.getIron_count(); i++)
                 resourceManager.getIron_array(i).draw(game.batch);
             for (int i = 0; i < resourceManager.getGunpowder_count(); i++)
@@ -660,23 +663,23 @@ public class PlayScreen implements Screen {
                         System.out.println("received time update");
                         time = Integer.parseInt(data[1]);
                     }
+                    //Handle Resource generation broadcast
                     else if (data[0].equals("Resources")){
-                        System.out.println("Data 1:" + data[1]);
-                        if (data[1].length()<21){
-                            System.out.println("req resend");
-                            game.playServices.BroadcastMessage("ResendR:");
+                        if (data[1].length()<21){   //If data is insufficient, ask server to resend via broadcast
+                            game.playServices.BroadcastMessage("ResendR:"); //broadcast to resend resource data
                         }
                         else {
-                            resourceManager.getResourceString(data[1]);
-                            resourceManager.generateResources();
+                            resourceManager.getResourceString(data[1]); //Send resource information to resource manager
+                            resourceManager.generateResources();    //Initial resource generation for clients
                         }
                     }
-                    else if (data[0].equals("ResendR")){
+                    else if (data[0].equals("ResendR")){    //Resend broadcast in case client's request server
                         if (getServerID()==getUserID()){
                             resourceManager.broadcastResources();
                         }
 
                     }
+                    //Broadcast to handle Resource deletion (One at a time)
                     else if (data[0].equals("Delete")){
                         System.out.println("delete resource"+data[2]+" "+data[3]);
                         if (data[1].equals("Iron"))
@@ -686,6 +689,7 @@ public class PlayScreen implements Screen {
                         else if (data[1].equals("Oil"))
                             resourceManager.delOil(Integer.parseInt(data[2]), Float.parseFloat(data[3]));
                     }
+                    //Broadcast to handle Resource Generation (One at a time)
                     else if (data[0].equals("Generate")) {
                         System.out.println("generate resources" + data[1] +" "+data[2] + " "+data[3]);
                         try {
@@ -703,7 +707,6 @@ public class PlayScreen implements Screen {
                             }
                         }
                         catch (Exception e){
-                            System.out.println("resource crash");
                             e.printStackTrace();
                         }
                     }

@@ -18,7 +18,6 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.maps.MapLayer;
@@ -32,9 +31,7 @@ import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
-import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.Touchpad;
 import com.badlogic.gdx.scenes.scene2d.ui.Touchpad.TouchpadStyle;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
@@ -46,29 +43,36 @@ import com.badlogic.gdx.utils.Array;
 import java.util.Arrays;
 import java.util.HashMap;
 
-/*
-**********************************declare number of players, first 3 players are team 1,
- */
 public class PlayScreen implements Screen {
-//    private Controller controller;
+
+    //user id and server id are used for Google Play Services communication identification
     private int userID;
     private int serverID;
+
+    //Used to store the name of the Sprite name for different UserID
     private String[] spriteName = {"PYRO", "DAACTAR"};
     private int numOfPlayers = 2;
 
+    //Use as a instance for the SpaceConquest so that playscreen can get important instances like
+    //SpriteBatch in order to run the game
     private SpaceConquest game;
     private TextureAtlas atlas;
     Texture mapTexture;
+
+    //Cameras and viewport for user to see the gameplay
     private OrthographicCamera gamecam;
+    private OrthographicCamera controllerCamera;
+    private Stage stage;     //Stage is used for the controller
     private Viewport gamePort;
     private Viewport viewport;
     private Hud hud;
 
+    //Fireball variables
     private float rateOfFire = (float) 0.3;
     private float coolDown;
     private float buffCoolDown=20;
-//    private Array<FireBall> networkFireballs;
 
+    //Variables for spawning of resources
     private float x;
     private float y;
     private float width;
@@ -78,37 +82,15 @@ public class PlayScreen implements Screen {
     private TiledMap map; //Reference to the map
     private OrthogonalTiledMapRenderer renderer; //Renders the map to the screen
 
-    private World world;
+    private World world; //creating a world
     private Box2DDebugRenderer b2dr; //graphic representation of the body in the box 2d
 
-    //Touchpad
-    private OrthographicCamera camera;
-    private Stage stage;
-
-    private BitmapFont font;
+    //For Controller Buttons
     private TextureAtlas buttonsAtlas; //** image of buttons **//
-    private Skin buttonSkin; //** images are used as skins of the button **//
-    private Table table;
-    private ImageButton button;
-    private ImageButton jetpack_Button;
+    private Skin buttonSkin; //** images are used as skins of the fireButton **//
+    private ImageButton fireButton;
+    private ImageButton boostButton;
     private ImageButton buffMode_Button;
-    private Label heading;
-
-    private Touchpad touchpad;
-    private TouchpadStyle touchpadStyle;
-    private Skin touchpadSkin;
-    private Drawable touchBackground;
-    private Drawable touchKnob;
-    private GameScreenManager gsm;
-    //Sprites
-    private MainCharacter mainCharacter;
-    private HashMap<Integer,SideCharacter> enemyhashmap;
-    private HashMap<Integer,String[]> positionvalues;
-    private ResourceManager resourceManager;
-    //Server
-    Server server;
-    private int time;
-
     private Texture sumo_up;
     private Texture sumo_down;
     private Texture boost_up;
@@ -117,39 +99,78 @@ public class PlayScreen implements Screen {
     private Texture health;
     private Texture orange;
 
+    //Touchpad
+    private Touchpad touchpad;
+    private TouchpadStyle touchpadStyle;
+    private Skin touchpadSkin;
+    private Drawable touchBackground;
+    private Drawable touchKnob;
+
+    //Sprites for MainCharacters, sideCharacters and resources
+    private MainCharacter mainCharacter;
+    HealthBar healthBar;
+    private HashMap<Integer,SideCharacter> enemyhashmap;
+    private HashMap<Integer,String[]> positionvalues;
+    private ResourceManager resourceManager;
+
+    //Server
+    Server server;
+    private int time;
+
+    //music
     private Music music;
     private Music boostSound;
 
+    //Game State/Screen Manager
+    private GameScreenManager gsm;
+
     public PlayScreen(SpaceConquest game, GameScreenManager gsm){
-        // adding the music
+        // playing the music
         music = Gdx.audio.newMusic(Gdx.files.internal("menuMusic/In-game.mp3"));
         music.setLooping(false);
         music.play();
 
+        //this sound is for the jet pack
         boostSound = Gdx.audio.newMusic(Gdx.files.internal("sounds/boost.wav"));
 
+        //This rocket sound is played when Boost Button is pressed
+        boostSound = Gdx.audio.newMusic(Gdx.files.internal("sounds/boost.wav"));
 
+        //Getting the texture atlas
         atlas = new TextureAtlas("sprites/sprite.txt");
+
+        //For game
         this.game = game;
         this.gsm = gsm;
+
+        //player 0 is the server by default
         this.userID=0;
         this.serverID=0;
+
+        //Number of players are 2 by default unless the game become 2v2 or 3v3
         this.numOfPlayers = 2;
+
+        //time limit of the game is 300 seconds
         this.time = 300;
-        //uncomment this
+
+        //getting the info from Google Play Services
         this.userID = game.multiplayerSessionInfo.mParticipantsId.indexOf(game.multiplayerSessionInfo.mId);
         numOfPlayers =  game.multiplayerSessionInfo.mParticipants.size();
         game.multiplayerSessionInfo.mId_num=this.userID;
+
         //Background and Character assets
         mapTexture = new Texture("map/map_spaceship.png");
+
         //Game map and Game View
-        //camera of the map
         gamecam  = new OrthographicCamera();
         gamecam.setToOrtho(false,SpaceConquest.V_WIDTH/ SpaceConquest.PPM,SpaceConquest.V_HEIGHT/SpaceConquest.PPM);
-        camera = new OrthographicCamera();
+
+        //controller controllerCamera of the game
+        controllerCamera = new OrthographicCamera();
+
         //create a FitViewport to maintain virtual aspect ratio
         gamePort = new FitViewport(SpaceConquest.V_WIDTH/SpaceConquest.PPM,SpaceConquest.V_HEIGHT/SpaceConquest.PPM,gamecam);
-        viewport = new FitViewport(SpaceConquest.V_WIDTH, SpaceConquest.V_HEIGHT, camera);
+        viewport = new FitViewport(SpaceConquest.V_WIDTH, SpaceConquest.V_HEIGHT, controllerCamera);
 
         //create our game HUD for scores/timers/level info
         hud = new Hud(game.batch,this);
@@ -164,7 +185,7 @@ public class PlayScreen implements Screen {
         world = new World(new Vector2(0,0),true);
         b2dr = new Box2DDebugRenderer();
 
-        //B2world
+        //Creating the world
         new B2WorldCreator(this);
 
         //Sprites and Characters
@@ -177,11 +198,10 @@ public class PlayScreen implements Screen {
                 enemyhashmap.put(i, sideCharacter);
             }
         }
+        //set origin to center so for sprite rotation and scaling
         mainCharacter.setOriginCenter();
 
-
-        //Initialize FireBalls Array
-//        networkFireballs = new Array<FireBall>();
+        //set firebutton cooldown to 0
         coolDown = 0;
 
         //Initialize Spawn Area : around center of the map
@@ -195,8 +215,10 @@ public class PlayScreen implements Screen {
                 this.height = rect.getHeight()/ SpaceConquest.PPM;
             }
         }
+
         //set world listener
         world.setContactListener(new WorldContactListener(this,game));
+
         //Initialise resource manager
         resourceManager = new ResourceManager(this, game, userID, x, y, width, height);
 
@@ -204,77 +226,89 @@ public class PlayScreen implements Screen {
         //Create a touchpad skin
         touchpadSkin = new Skin();
         //Set background image
-        //touchpadSkin.add("touchBackground", new Texture("touchpad/touchBackground.png"));
         //Set knob image
         touchpadSkin.add("touchKnob", new Texture("touchpad/knob.png"));
         //Create TouchPad Style
         touchpadStyle = new TouchpadStyle();
         //Create Drawable's from TouchPad skin
-        //touchBackground = touchpadSkin.getDrawable("touchBackground");
         touchKnob = touchpadSkin.getDrawable("touchKnob");
-//        touchKnob = touchpadSkin.getDrawable("touchBackground");
         //Apply the Drawables to the TouchPad Style
-//        touchpadStyle.background = touchBackground;
         touchpadStyle.knob = touchKnob;
         //Create new TouchPad with the created style
         touchpad = new Touchpad(10, touchpadStyle);
         //setBounds(x,y,width,height)
         touchpad.setBounds(0, 0, 70, 70);
 
-        buttonsAtlas = new TextureAtlas("button/button.pack");
+        //get fireButton atlas
+        buttonsAtlas = new TextureAtlas("fireButton/fireButton.pack");
         buttonSkin = new Skin(buttonsAtlas);
 
-//        table = new Table(buttonSkin);
-//        table.setBounds(50,50, 50, 50);
-        sumo_up = new Texture(Gdx.files.internal("button/sumo_button_up.png"));
-        sumo_down = new Texture(Gdx.files.internal("button/sumo_button_down.png"));
-        boost_up = new Texture(Gdx.files.internal("button/boost_button_up.png"));
-        boost_down = new Texture(Gdx.files.internal("button/boost_button_down.png"));
+        //creating fireButton texture for each fireButton condition
+        sumo_up = new Texture(Gdx.files.internal("fireButton/sumo_button_up.png"));
+        sumo_down = new Texture(Gdx.files.internal("fireButton/sumo_button_down.png"));
+        boost_up = new Texture(Gdx.files.internal("fireButton/boost_button_up.png"));
+        boost_down = new Texture(Gdx.files.internal("fireButton/boost_button_down.png"));
         red = new Texture(Gdx.files.internal("button_red.png"));
         orange = new Texture(Gdx.files.internal("button_orange.png"));
         health = new Texture(Gdx.files.internal("healthbar.png"));
 
+        //create health bar for main character
+        healthBar = new HealthBar(new TextureRegion(health),mainCharacter);
+
+        //create a tint colour
         Color tintColor = new Color(0.5f, 0.5f, 0.5f, 1f);
+
+        //creating fire buttons
         ImageButton.ImageButtonStyle imbFire = new ImageButton.ImageButtonStyle(new TextureRegionDrawable(new TextureRegion(red)), new TextureRegionDrawable(new TextureRegion(orange))
                 ,null,null,null,null);
         imbFire.disabled = buttonSkin.newDrawable(new TextureRegionDrawable(new TextureRegion(orange)),tintColor);
-        button = new ImageButton(imbFire);
-        button.setBounds(0,0,40,40);
+        fireButton = new ImageButton(imbFire);
+        fireButton.setBounds(0, 0, 40, 40);
 
+        //creating boost buttons
         ImageButton.ImageButtonStyle imbBoost = new ImageButton.ImageButtonStyle(new TextureRegionDrawable(new TextureRegion(boost_up)), new TextureRegionDrawable(new TextureRegion(boost_down))
                 ,null,null,null,null);
         imbBoost.disabled = buttonSkin.newDrawable(new TextureRegionDrawable(new TextureRegion(boost_down)),tintColor);
-        jetpack_Button = new ImageButton(imbBoost);
-        jetpack_Button.setBounds(0,0,40,40);
+        boostButton = new ImageButton(imbBoost);
+        boostButton.setBounds(0, 0, 40, 40);
 
+        //creating sumo buttons
         ImageButton.ImageButtonStyle imbSumo = new ImageButton.ImageButtonStyle(new TextureRegionDrawable(new TextureRegion(sumo_up)), new TextureRegionDrawable(new TextureRegion(sumo_down))
                 ,null,null,null,null);
         imbSumo.disabled = buttonSkin.newDrawable(new TextureRegionDrawable(new TextureRegion(sumo_down)),tintColor);
 //        buffMode_Button = new ImageButton(new TextureRegionDrawable(new TextureRegion(orange)), new TextureRegionDrawable(new TextureRegion(red)));
         buffMode_Button = new ImageButton(imbSumo);
-        buffMode_Button.setDisabled(true);
         buffMode_Button.setBounds(0, 0, 40, 40);
-        //table.add(button);
+        buffMode_Button.setDisabled(true);
 
-        //Create a Stage and add TouchPad
+        //Create a Stage and add in the controllers
         stage = new Stage(viewport, game.batch);
-
         stage.addActor(touchpad);
-        stage.addActor(button);
-        stage.addActor(jetpack_Button);
+        stage.addActor(fireButton);
+        stage.addActor(boostButton);
         stage.addActor(buffMode_Button);
         Gdx.input.setInputProcessor(stage);
-//        controller = new Controller();
-//        controller.create();
-//        controller.createTouchPadController();
-        //Setscreen in androidLauncher
-        //uncomment this
+
+        //set screen in android launcher and allows it to call playscreen object
+        //for google play services communication
         game.playServices.setScreen(this);
+
+        //If you are the server, create a new server
         if (this.userID==serverID){
             server=new Server(game);
         }
+
+        //show the screen
         show();
+
+        //set the position of buttons and touch pad in the camera and viewport
+        fireButton.setPosition(controllerCamera.position.x + viewport.getWorldWidth() / 4 + 40, controllerCamera.position.y - viewport.getWorldHeight() / 2 + 10);
+        boostButton.setPosition(controllerCamera.position.x + viewport.getWorldWidth() / 4, controllerCamera.position.y - viewport.getWorldHeight() / 2 + 10);
+        buffMode_Button.setPosition(controllerCamera.position.x + viewport.getWorldWidth() / 4 + 20, controllerCamera.position.y-viewport.getWorldHeight()/2+30);
+        touchpad.setPosition((controllerCamera.position.x - (viewport.getWorldWidth() / 2)) + 10,
+                (controllerCamera.position.y - viewport.getWorldHeight() / 2) + (10));
     }
+
     @Override
     public void show() {
         MenuScreen.menuMusic.stop();
@@ -284,28 +318,35 @@ public class PlayScreen implements Screen {
         }
     }
 
-
+    //handles the input of the user
     public void handleInput(float dt){
         coolDown +=dt;
         buffCoolDown+=dt;
-        if (button.isPressed() && coolDown >rateOfFire && !button.isDisabled()) {
+        //checks if button is pressed when coolDown >rateOfFire and fireButton is enabled
+        if (fireButton.isPressed() && coolDown >rateOfFire && !fireButton.isDisabled()) {
             coolDown = 0;
             mainCharacter.b2body.applyLinearImpulse(new Vector2((float) (mainCharacter.b2body.getLinearVelocity().x *-1),
                     (float) (mainCharacter.b2body.getLinearVelocity().y * -1)), mainCharacter.b2body.getWorldCenter(), true);
             mainCharacter.fire();
+            //disable fire button when ammunition is 0
             if(mainCharacter.getAmmunition()==0){
-                button.setDisabled(true);
+                fireButton.setDisabled(true);
             }
         }
         else {
+            //enable button if ammunition is >0
             if(mainCharacter.getAmmunition()>0){
-                button.setDisabled(false);
+                fireButton.setDisabled(false);
             }
-            double speedreduction = Math.pow(0.9, mainCharacter.getAdditionalWeight()*0.4);
-            if(jetpack_Button.isPressed() && mainCharacter.getJetpack_time()>0.05){
+
+            //reduce the speed based on the additional weight of the mainCharacter
+            double speedCoeff = 2 * Math.pow(0.9, mainCharacter.getAdditionalWeight()*0.4);
+
+            //if boost button is pressed when jetpack time is > 0.05 seconds
+            if(boostButton.isPressed() && mainCharacter.getJetpack_time()>0.05){
                 mainCharacter.setBoostPressed(true);
                 mainCharacter.exhaustJetPack(dt);
-                speedreduction = 3;
+                speedCoeff = 6;
                 if (!boostSound.isPlaying()) {
                     boostSound.play();
                 }
@@ -313,16 +354,19 @@ public class PlayScreen implements Screen {
             else {
                 boostSound.stop();
                 mainCharacter.setBoostPressed(false);
-                //friction
+                //implement friction by applying negative force based on current
                 mainCharacter.b2body.applyLinearImpulse(new Vector2((float) (mainCharacter.b2body.getLinearVelocity().x * -0.03),
                         (float) (mainCharacter.b2body.getLinearVelocity().y * -0.03)), mainCharacter.b2body.getWorldCenter(), true);
             }
-            mainCharacter.setxSpeedPercent((float) (touchpad.getKnobPercentX()));
-            mainCharacter.setySpeedPercent((float) (touchpad.getKnobPercentY()));
-            mainCharacter.b2body.applyLinearImpulse(new Vector2((float)(mainCharacter.getxSpeedPercent() *2* speedreduction),
-                    (float)(mainCharacter.getySpeedPercent() * 2 * speedreduction)), mainCharacter.b2body.getWorldCenter(), true);
+
+            //set xSpeedPercent and ySpeedPercent in the mainCharacter and the
+            mainCharacter.setxSpeedPercent(touchpad.getKnobPercentX());
+            mainCharacter.setySpeedPercent(touchpad.getKnobPercentY());
+            mainCharacter.b2body.applyLinearImpulse(new Vector2((float)(mainCharacter.getxSpeedPercent() * speedCoeff),
+                    (float)(mainCharacter.getySpeedPercent() * speedCoeff)), mainCharacter.b2body.getWorldCenter(), true);
         }
 
+        //buffbutton have cooled down and the maincharacter has enabled buff
         if(buffCoolDown >mainCharacter.getBuffCoolDown()&&mainCharacter.isEnableBuff()) {
             if(buffMode_Button.isDisabled()) {
                 buffMode_Button.setDisabled(false);
@@ -349,9 +393,10 @@ public class PlayScreen implements Screen {
         //input updates
         handleInput(dt);
 
-        //Allows box2d calculate the physics
+        //Calls box2d calculate the physics every 1/60 seconds
         world.step(1 / 60f, 6, 2);
 
+        //gets the different value of the gadget that the mainCharacter is holding on to
         float[] gadget = mainCharacter.getGadgetInfo();
         //hud timer
         hud.update(dt, (int) gadget[0], gadget[1]);
@@ -390,19 +435,6 @@ public class PlayScreen implements Screen {
             sideCharacter.update(dt);
         }
 
-        //check if fireballs is destroyed or not
-//        synchronized (networkFireballs) {
-//            try {
-//                for (FireBall ball : networkFireballs) {
-//                    ball.update(dt);
-//                    if (ball.isDestroyed())
-//                        networkFireballs.removeValue(ball, true);
-//                }
-//            }catch (Exception e){
-//                System.out.println("error here");
-//            }
-//        }
-
         //Update resources to check if destroyed
         resourceManager.updateIron(dt);
         resourceManager.updateGunPowder(dt);
@@ -420,49 +452,33 @@ public class PlayScreen implements Screen {
         }
 
 
-        //SendMessage
+        //Broadcast your condition to all other players so that your character in other phones will be updated
         try {
-            System.out.println("sending character's coordinate");
             game.playServices.BroadcastUnreliableMessage(userID + ":" + x + ":" + y + ":" + mainCharacter.getAngle() + ":" +
-                    String.valueOf(!mainCharacter.isDestroyed()) + ":" + (mainCharacter.isBuffMode()?mainCharacter.getBuffRadius():mainCharacter.getRadius())
+                    String.valueOf(!mainCharacter.isDestroyed()) + ":" + (mainCharacter.isBuffMode() ? mainCharacter.getBuffRadius() : mainCharacter.getRadius())
                     + ":" + mainCharacter.getHP() +
                     ":" + mainCharacter.getLastXPercent() + ":" + mainCharacter.getLastYPercent() + ":" +
-                    mainCharacter.getFireCount() + ":" +mainCharacter.b2body.getLinearVelocity().x +
-                    ":"+mainCharacter.b2body.getLinearVelocity().y +":"+mainCharacter.getIFCount());
-            System.out.println("x and y velocity is "+mainCharacter.b2body.getLinearVelocity().x+ " "+
-                    mainCharacter.b2body.getLinearVelocity().y);
+                    mainCharacter.getFireCount() + ":" + mainCharacter.b2body.getLinearVelocity().x +
+                    ":" + mainCharacter.b2body.getLinearVelocity().y + ":" + mainCharacter.getIFCount());
 
         }catch (Exception e){
             System.out.println("error while sending message");
             e.printStackTrace();
         }
 
-        button.setPosition(camera.position.x + viewport.getWorldWidth() / 4 + 40, camera.position.y - viewport.getWorldHeight() / 2 + 10);
-        jetpack_Button.setPosition(camera.position.x+viewport.getWorldWidth() / 4 ,camera.position.y-viewport.getWorldHeight()/2+10);
-        buffMode_Button.setPosition(camera.position.x+viewport.getWorldWidth() / 4 + 20,camera.position.y-viewport.getWorldHeight()/2+30);
-//        touchpad.setPosition((gamecam.position.x-(gamePort.getWorldWidth() / 2)),
-//                (gamecam.position.y-gamePort.getWorldHeight()/2));
-        touchpad.setPosition((camera.position.x - (viewport.getWorldWidth() / 2)) + 10 ,
-                (camera.position.y - viewport.getWorldHeight() / 2) + (10));
 
         //gamecam updates
         gamecam.update();
-        renderer.setView(gamecam); //render only what the gamecam can see
-
-//        button.setPosition(gamecam.position.x + gamePort.getWorldWidth() / 4 + 40 / SpaceConquest.PPM, gamecam.position.y - gamePort.getWorldHeight() / 2 + 10 / SpaceConquest.PPM);
-//        jetpack_Button.setPosition(gamecam.position.x+gamePort.getWorldWidth() / 4 ,gamecam.position.y-gamePort.getWorldHeight()/2+10/ SpaceConquest.PPM);
-//        buffMode_Button.setPosition(gamecam.position.x+gamePort.getWorldWidth() / 4 + 20 / SpaceConquest.PPM,gamecam.position.y-gamePort.getWorldHeight()/2+30/ SpaceConquest.PPM);
-////        touchpad.setPosition((gamecam.position.x-(gamePort.getWorldWidth() / 2)),
-////                (gamecam.position.y-gamePort.getWorldHeight()/2));
-//        touchpad.setPosition((gamecam.position.x-(gamePort.getWorldWidth() / 2))+(10/ SpaceConquest.PPM),
-//                (gamecam.position.y-gamePort.getWorldHeight()/2)+(10/ SpaceConquest.PPM));
-
+        //render only what the gamecam can see
+        renderer.setView(gamecam);
     }
+
     //render
     @Override
     public void render(float delta) {
         //End game and transition to Game Over Screen when time is up
         try {
+            //if time is up, update score and calculate which team is the winner
             if (hud.isTimeUp() == true) {
                 music.stop();
                 int len = game.multiplayerSessionInfo.mParticipants.size(); //Collect information from server regarding scores
@@ -479,14 +495,12 @@ public class PlayScreen implements Screen {
 
             }
 
-            //make sure that everything is updated
+            //calls update method to make sure that everything is updated
             update(delta);
 
             //clear screen
             Gdx.gl.glClearColor(0, 0, 0, 1); //clear colour
             Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT); //clear the screen
-            //backgroup and character image (Used for test)
-//            game.batch.setProjectionMatrix(gamecam.combined); //only render what the camera can see
 
             //render the map
             renderer.render();
@@ -495,7 +509,7 @@ public class PlayScreen implements Screen {
             game.batch.draw(mapTexture, 0, 0, (mapTexture.getWidth() * SpaceConquest.MAP_SCALE) / SpaceConquest.PPM,
                     (mapTexture.getHeight() * SpaceConquest.MAP_SCALE) / SpaceConquest.PPM);
 
-            //Side Characters
+            //Draw Side Characters
             for (int i: enemyhashmap.keySet()) {
                 SideCharacter sideCharacter = enemyhashmap.get(i);
                 try {
@@ -516,6 +530,7 @@ public class PlayScreen implements Screen {
                     System.out.println("error updating enemies coordinate");
                 }
             }
+            //generate a each resource if the respective resource count is < 7
             //Render resources: Iron, Gunpowder and Oil
             for (int i = 0; i < resourceManager.getIron_count(); i++)
                 resourceManager.getIron_array(i).draw(game.batch);
@@ -524,14 +539,10 @@ public class PlayScreen implements Screen {
             for (int i = 0; i < resourceManager.getOil_count(); i++)
                 resourceManager.getOil_array(i).draw(game.batch);
 
+            //draw main character
             mainCharacter.draw(game.batch);
 
-            //render the fireballs over the network
-//            for (FireBall ball : networkFireballs)
-//                ball.draw(game.batch);
-
-            //maincharacter healthbay
-            HealthBar healthBar = new HealthBar(new TextureRegion(health),mainCharacter);
+            //draw maincharacter healthbar
             float hp = mainCharacter.getHP();
             healthBar.setWidth(hp);
             healthBar.draw(game.batch, hp);
@@ -541,7 +552,7 @@ public class PlayScreen implements Screen {
             //render our Box2DDebugLines
 //            b2dr.render(world, gamecam.combined);
 
-            //Join/Combine hud camera to game batch
+            //Join/Combine hud controllerCamera to game batch
             game.batch.setProjectionMatrix(hud.stage.getCamera().combined);
             hud.stage.draw();
 
@@ -549,8 +560,7 @@ public class PlayScreen implements Screen {
             stage.act(Gdx.graphics.getDeltaTime());
             stage.draw();
 
-//            controller.render();
-
+            //broadcast your time if you are the server, otherwise, update the time you receive from the server
             if (userID==serverID){
                 System.out.println("updating time");
                 try {
@@ -568,7 +578,6 @@ public class PlayScreen implements Screen {
 
     @Override
     public void resize(int width, int height) {
-
         System.out.println("updating");
         gamePort.update(width, height);
         viewport.update(width, height);
@@ -598,6 +607,7 @@ public class PlayScreen implements Screen {
 
     }
 
+    //for proper disposal of the assets so that subsequent match will be bug-free
     @Override
     public void dispose() {
         map.dispose();
@@ -611,19 +621,14 @@ public class PlayScreen implements Screen {
         return atlas;
     }
 
+    //slow down the character when touchpad isn't touched
     private void slowDownCharacter() {
         if(!touchpad.isTouched()) {
             mainCharacter.b2body.applyLinearImpulse(new Vector2((float) (mainCharacter.b2body.getLinearVelocity().x * -0.1), (float) (mainCharacter.b2body.getLinearVelocity().y * -0.1)), mainCharacter.b2body.getWorldCenter(), true);
         }
     }
 
-
-//    public void depositResource(){
-//        int res = mainCharacter.getAdditionalWeight();
-//        mainCharacter.depositResource();
-//        return res;
-//    }
-
+    //listen to message sent over the network
     public void MessageListener(byte[] bytes){
 
         try {
@@ -716,6 +721,8 @@ public class PlayScreen implements Screen {
             System.out.println("error in receiving message");
         }
     }
+
+    //adds the score and update the hud
     public void addscore(String id,int data){
         int num = Integer.parseInt(id);
         if (num<numOfPlayers/2){
@@ -729,9 +736,11 @@ public class PlayScreen implements Screen {
     public int getNumOfPlayers() {
         return numOfPlayers;
     }
+
     public int getUserID() {
         return userID;
     }
+
     public int getServerID() {
         return serverID;
     }
@@ -740,8 +749,5 @@ public class PlayScreen implements Screen {
         return rateOfFire;
     }
 
-    public void setRateOfFire(float rateOfFire) {
-        this.rateOfFire = rateOfFire;
-    }
 }
 

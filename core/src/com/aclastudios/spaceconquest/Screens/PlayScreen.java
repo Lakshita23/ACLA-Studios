@@ -43,6 +43,8 @@ import com.badlogic.gdx.utils.Array;
 import java.util.Arrays;
 import java.util.HashMap;
 
+//the screen where the players will spend the most time in
+//this class covers every operation required in the game
 public class PlayScreen implements Screen {
 
     //user id and server id are used for Google Play Services communication identification
@@ -240,14 +242,14 @@ public class PlayScreen implements Screen {
         touchpad.setBounds(0, 0, 70, 70);
 
         //get fireButton atlas
-        buttonsAtlas = new TextureAtlas("fireButton/fireButton.pack");
+        buttonsAtlas = new TextureAtlas("button/button.pack");
         buttonSkin = new Skin(buttonsAtlas);
 
         //creating fireButton texture for each fireButton condition
-        sumo_up = new Texture(Gdx.files.internal("fireButton/sumo_button_up.png"));
-        sumo_down = new Texture(Gdx.files.internal("fireButton/sumo_button_down.png"));
-        boost_up = new Texture(Gdx.files.internal("fireButton/boost_button_up.png"));
-        boost_down = new Texture(Gdx.files.internal("fireButton/boost_button_down.png"));
+        sumo_up = new Texture(Gdx.files.internal("button/sumo_button_up.png"));
+        sumo_down = new Texture(Gdx.files.internal("button/sumo_button_down.png"));
+        boost_up = new Texture(Gdx.files.internal("button/boost_button_up.png"));
+        boost_down = new Texture(Gdx.files.internal("button/boost_button_down.png"));
         red = new Texture(Gdx.files.internal("button_red.png"));
         orange = new Texture(Gdx.files.internal("button_orange.png"));
         health = new Texture(Gdx.files.internal("healthbar.png"));
@@ -654,11 +656,6 @@ public class PlayScreen implements Screen {
                         System.out.println("received point update from server");
                         Hud.updatescore(Integer.parseInt(data[1]), Integer.parseInt(data[2]));
                     }
-        //            else if (data[0].equals("fire")){
-        //                FireBall f = new FireBall(this, Float.parseFloat(data[2]),
-        //                        Float.parseFloat(data[3]), Float.parseFloat(data[4]), Float.parseFloat(data[5]),true);
-        //                networkFireballs.add(f);
-        //            }
                     else if (data[0].equals("Time")){
                         System.out.println("received time update");
                         time = Integer.parseInt(data[1]);

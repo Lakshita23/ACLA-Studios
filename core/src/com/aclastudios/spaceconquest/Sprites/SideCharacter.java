@@ -23,13 +23,14 @@ import com.badlogic.gdx.physics.box2d.Shape;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Array;
 
+//This is the side character class where all the features are implemented
 public class SideCharacter extends Sprite{
-    //private float xSpeed,ySpeed;
     public final String[] area = {"Team1Spawn","Team2Spawn"};
     private float xSpeedPercent, ySpeedPercent,lastXPercent, lastYPercent;
     private float x, y;
     private float angle;
     private int enemyID;
+
     private int actualFireCount;
     private int fireCount;
     private int actualIFCount=0;
@@ -38,30 +39,27 @@ public class SideCharacter extends Sprite{
     private float cooldown;
     private Array<FireBall> fireballs;
 
+    //asset-related field
     public World world;
     private PlayScreen screen;
     TiledMap map;
     public Body b2body;
     protected Fixture fixture;
     private TextureRegion character;
+
+    //side character info
     float spawnX;
     float spawnY;
-    private float stateTime;
     private boolean setToDestroy;
     private boolean destroyed;
-    private float deathCount;
     private enum State { STANDING, RUNNING };
     private State currentState;
     private State previousState;
     private Animation running;
     private float stateTimer;
-    private float weight;
-
     private float radius = 11/ SpaceConquest.PPM;
-    private float scale = (float) (1.0/20);
     private float characterSize =  25/ SpaceConquest.PPM;
-    //private int charWeight;
-    //private int charScore;
+
     public SideCharacter(World world, PlayScreen screen, int ID, String spriteName){
         super(screen.getAtlas().findRegion(spriteName));
         this.screen = screen;
@@ -84,10 +82,8 @@ public class SideCharacter extends Sprite{
         actualFireCount = 0;
         cooldown =0;
 
-        stateTime = 0;
         setToDestroy = false;
         destroyed = false;
-        deathCount = 0;
         lastXPercent=1;
         lastYPercent=0;
         xSpeedPercent=0;
@@ -100,6 +96,7 @@ public class SideCharacter extends Sprite{
 
     }
 
+    //this method is called at the start of the game and after the player died
     public void defineCharacter(){
         BodyDef bdef = new BodyDef();
         for (MapLayer layer : map.getLayers()) {
@@ -142,27 +139,21 @@ public class SideCharacter extends Sprite{
             ball.draw(batch);
     }
 
+    //this method is called by playscreen at every frame
     public void update(float dt) {
-        stateTime += dt;
         cooldown += dt;
         if (setToDestroy ) {
             System.out.println("destroying");
             world.destroyBody(b2body);
             destroyed = true;
             setToDestroy = false;
-            stateTime = 0;
-            deathCount+=1;
         }
         if(destroyed){
-            //if(stateTime>(deathCount*1.5)){
-                stateTime = 0;
                 destroyed = false;
                 defineCharacter();
-            //}
         }else {
             b2body.setTransform(this.x, this.y,angle);
             setPosition(b2body.getPosition().x - getWidth() / 2, b2body.getPosition().y - getHeight() / 2);
-            //System.out.println("My weight is " + charWeight);
             setRegion(getFrame(dt));
         }
         if((cooldown>rateOfFire)&&((fireCount<actualFireCount)||(IFCount<actualIFCount))){
@@ -175,10 +166,6 @@ public class SideCharacter extends Sprite{
                 fireballs.removeValue(ball, true);
         }
     }
-//    public float getCharacterScale() {
-//
-//        return ((float)(2*radius/characterSize));
-//    }
     public TextureRegion getFrame(float dt){
         currentState = getState();
 
@@ -198,8 +185,6 @@ public class SideCharacter extends Sprite{
     }
 
     public State getState(){
-//        System.out.println("SideCharacter X: " + b2body.getLinearVelocity().x);
-//        System.out.println("SideCharacter Y: " + b2body.getLinearVelocity().y);
         if (b2body.getLinearVelocity().x > 5 || b2body.getLinearVelocity().x < -5 || b2body.getLinearVelocity().y > 5 || b2body.getLinearVelocity().y < -5) {
             return State.RUNNING;
         } else {
@@ -207,11 +192,6 @@ public class SideCharacter extends Sprite{
         }
     }
 
-    public void setCategoryFilter(short filterBit){
-        Filter filter = new Filter();
-        filter.categoryBits = filterBit;
-        fixture.setFilterData(filter);
-    }
     public void dead(){
         setToDestroy = true;
     }
@@ -220,6 +200,8 @@ public class SideCharacter extends Sprite{
         return destroyed;
     }
 
+    //this method is called whenever the play screen receive a message from the network
+    //if there is a mismatch of actual fire count and the fire count send over the other player, this character will call fire
     public void updateEnemy(float x,float y, float angle,float radius,float xPercent,float yPercent,int actualFireCount, float xSpeed,float ySpeed, int IFCount){
         this.x=x;
         this.y=y;
@@ -236,15 +218,15 @@ public class SideCharacter extends Sprite{
         if(radius!=this.radius) {
             System.out.println("********old radius = " + this.radius + "new radius = "+ radius +"*************");
             setScale((radius<this.radius)?1:radius/this.radius);
-//            setSize(2*radius,2*radius);
         }
         this.radius = radius;
         Array<Fixture> fix = b2body.getFixtureList();
         Shape shape = fix.get(0).getShape();
         shape.setRadius(radius);
-//        System.out.println(shape.getRadius());
         setRotation(angle);
     }
+
+    //fires a fireball at the current direction
     public float[] fire(boolean imbaOrNot){
         System.out.println("user "+enemyID+" is firing");
         if(imbaOrNot)
@@ -254,48 +236,6 @@ public class SideCharacter extends Sprite{
         float[] s = {b2body.getPosition().x,b2body.getPosition().y};
         FireBall f = new FireBall(screen, s[0], s[1], lastXPercent, lastYPercent,radius,true,enemyID,imbaOrNot);
         fireballs.add(f);
-//        System.out.println("ammunition left: "+ ammunition);
         return s;
-    }
-    /*
-    public float getySpeedPercent() {
-        return ySpeed;
-    }
-
-    public float getxSpeedPercent() {
-        return xSpeed;
-    }
-
-    public void setxSpeedPercent(float xSpeed) {
-        this.xSpeed = xSpeed;
-    }
-
-    public void setySpeedPercent(float ySpeed) {
-        this.ySpeed = ySpeed;
-    }
-
-    public Integer getAdditionalWeight() {
-        return charWeight;
-    }
-
-    public int getCharScore() {
-        return charScore;
-    }
-
-    public void increaseKnapSack(int charWeight) {
-        this.charWeight += charWeight;
-    }
-
-    public void setAdditionalWeight(int w){
-        this.charWeight=w;
-    }
-    */
-
-    public float getxSpeedPercent() {
-        return xSpeedPercent;
-    }
-
-    public float getySpeedPercent() {
-        return ySpeedPercent;
     }
 }

@@ -22,7 +22,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
-public class playersSelectScreen implements Screen {
+public class ModeSelectScreen implements Screen {
     private Viewport viewport;
     private Stage stage;
     private GameScreenManager gsm;
@@ -42,7 +42,7 @@ public class playersSelectScreen implements Screen {
     private float BUTTON_HEIGHT;
 
 
-    public playersSelectScreen(SpaceConquest game, GameScreenManager gsm){
+    public ModeSelectScreen(SpaceConquest game, GameScreenManager gsm){
         this.gsm = gsm;
         this.game = game;
         viewport = new FitViewport(SpaceConquest.V_WIDTH, SpaceConquest.V_HEIGHT, new OrthographicCamera());

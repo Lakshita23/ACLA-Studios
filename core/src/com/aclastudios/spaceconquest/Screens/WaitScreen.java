@@ -48,10 +48,6 @@ public class WaitScreen implements Screen {
 
 		//Check state of the session
 		if ((game.multiplayerSessionInfo.mState == game.multiplayerSessionInfo.ROOM_PLAY)) {
-			try {
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
 			//stop music of the menu screen in preparation to run new music in playScreen
 			MenuScreen.menuMusic.stop();
 			gsm.set(new PlayScreen(game, gsm));

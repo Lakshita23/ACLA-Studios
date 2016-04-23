@@ -11,18 +11,23 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Random;
 
-
+/*Handles resource spawning, deleting, updating.
+Also sends and handles broadcast messages to generate, update and delete resources.
+ */
 public class ResourceManager {
 
+    PlayScreen screen;
+    //player userID determines methods to be used
+    private int userID;
+    private SpaceConquest game;
+    //Resource counts and arrays to store all resource objects
     private int iron_count;
     private ArrayList<Iron> iron_array;
     private int gunpowder_count;
     private ArrayList<GunPowder> gunpowder_array;
     private int oil_count;
     private ArrayList<Oil> oil_array;
-    PlayScreen screen;
-    private int userID;
-    private SpaceConquest game;
+
     private String allres;
     float x;
     float y;
@@ -32,12 +37,14 @@ public class ResourceManager {
     public ResourceManager(PlayScreen screen, SpaceConquest game, int userID, float x, float y, float width, float height){
         this.game = game;
         this.screen = screen;
+        //Initialise resource counts and arrays
         iron_count=0;
         iron_array=new ArrayList<Iron>();
         gunpowder_count=0;
         gunpowder_array=new ArrayList<GunPowder>();
         oil_count = 0;
         oil_array = new ArrayList<Oil>();
+        //Set player id to determine if player is server or client
         this.userID = userID;
         this.x = x;
         this.y = y;
@@ -45,7 +52,7 @@ public class ResourceManager {
         this.height = height;
     }
 
-
+    //getter functions
     public int getIron_count() {
         return iron_count;
     }
@@ -70,16 +77,18 @@ public class ResourceManager {
         return oil_array.get(i);
     }
 
+    //Method handles resource generation for all clients
     public void getResourceString(String resources){
         allres = resources;
-        System.out.println("Broadcast msg: "+allres);
     }
 
+    //Broadcast all resources' coordinates incase of failure on client's request
     public void broadcastResources(){
         game.playServices.BroadcastMessage("Resources:" + coordinatesR());
     }
+    //Generates iron, gunpowder and oil in the spawning area
     public void generateResources(){
-        if (userID==0){
+        if (userID==0){ //server generates all resources initially
             Random rand = new Random();
             while (iron_count<7)
                 generateIron(rand);
@@ -90,19 +99,18 @@ public class ResourceManager {
             broadcastResources();
 
         }
-        else{
+        else{   //clients generate resources initially based on server's broadcast of all resources.
             try {
-                System.out.println("in generate resources for player");
-                System.out.println("Allres: "+allres);
+
                 if (allres.length()<21){
-                    System.out.println("request resource from rm");
+                    //request for resend of resources from server in case server broadcast is faulty
                     game.playServices.BroadcastMessage("ResendR:R");
                 }
                 String[] igo = allres.split("R");
                 String[] irons = igo[1].split(",");
                 String[] gunps = igo[2].split(",");
                 String[] oils = igo[3].split(",");
-
+                //add all resources and render
                 for (int i = 0; i < irons.length; i++) {
                     addIron(Float.parseFloat(irons[i].split(" ")[0]),Float.parseFloat(irons[i].split(" ")[1]));
                 }
@@ -121,11 +129,9 @@ public class ResourceManager {
     }
     public void addIron(float xc, float yc){
         try {
-            System.out.println("creating iron");
+            //create iron from coordinates given by server
             Iron iron = new Iron(screen, xc, yc);
-            System.out.println("iron added");
             iron_array.add(iron);
-            System.out.println("iron added in resource manager");
             iron_count++;
         }catch (Exception e){
             System.out.println("problem in adding iron");
@@ -134,11 +140,9 @@ public class ResourceManager {
     }
     public void addGunPowder(float xc, float yc){
         try{
-            System.out.println("creating GP");
+            //create gunpowder from coordinates given by server
             GunPowder gp = new GunPowder(screen, xc, yc);
-            System.out.println("gunpowder added");
             gunpowder_array.add(gp);
-            System.out.println("gunpowder added in resource manager");
             gunpowder_count++;
         }catch (Exception e){
             System.out.println("problem in adding gunpowder");
@@ -147,67 +151,67 @@ public class ResourceManager {
     }
     public void addOil(float xc, float yc){
         try{
-            System.out.println("creating oil");
+            //create oil from coordinates given by server
             Oil oil = new Oil(screen, xc, yc);
-            System.out.println("oil added");
             oil_array.add(oil);
-            System.out.println("oil added in resource manager");
             oil_count++;
         }catch (Exception e){
             System.out.println("problem in adding oil");
             e.printStackTrace();
         }
     }
+
+    //Generate new resources
     private void generateIron(Random rand){
         Iron iron = new Iron(screen, (int) ((rand.nextInt((int) width) + x) * SpaceConquest.MAP_SCALE), (int) ((rand.nextInt((int) (height * SpaceConquest.MAP_SCALE)) + y) * SpaceConquest.MAP_SCALE));
-        System.out.println("IRON: "+userID+": " + iron.getX() + ", " + iron.getY());
         iron_array.add(iron);
         iron_count++;
     }
     private void generateGunPowder(Random rand){
         GunPowder gunpd = new GunPowder(screen, (int) ((rand.nextInt((int) width) + x) * SpaceConquest.MAP_SCALE), (int) ((rand.nextInt((int) (height * SpaceConquest.MAP_SCALE)) + y) * SpaceConquest.MAP_SCALE));
-        System.out.println("GUNPD: " + gunpd.getX() + ", " + gunpd.getY());
         gunpowder_array.add(gunpd);
         gunpowder_count++;
     }
     private void generateOil(Random rand){
         Oil oil = new Oil(screen, (int) ((rand.nextInt((int) width) + x) * SpaceConquest.MAP_SCALE), (int) ((rand.nextInt((int) (height * SpaceConquest.MAP_SCALE)) + y) * SpaceConquest.MAP_SCALE));
-        System.out.println("OIL: " + oil.getX() + ", " + oil.getY());
         oil_array.add(oil);
         oil_count++;
     }
 
+    //Update resources
     public void updateIron(float dt){
-        for (int n=0; n<iron_array.size();n++){
+        for (int n=0; n<iron_array.size();n++){     //update all
             Iron I = iron_array.get(n);
             I.update(dt);
-            if (I.ifDestroyed()){
-                iron_array.remove(n);
+            if (I.ifDestroyed()){       //check if destroyed
+                iron_array.remove(n);   //remove destroyed resource from array and decrement count
                 iron_count--;
+                //broadcast to all players about destroyed resource
                 game.playServices.BroadcastMessage("Delete:Iron:" + n + ":" +dt);
+                //generate new resource as 1 resource was destroyed
                 genIron();
             }
         }
     }
-    public void genIron(){
+    public void genIron(){  //generate 1 new resource
         Random rand = new Random();
         generateIron(rand);
         Iron iron = iron_array.get(iron_count-1);
+        //Broadcast to all players about the generated resource
         game.playServices.BroadcastMessage("Generate:Iron:"+iron.getX()+":"+iron.getY());
     }
+
+    //On receiving broadcast, remove the specific resource
     public void delIron(int n, float dt){
         try {
-            System.out.println("deleting iron");
             Iron I = iron_array.get(n);
-            System.out.println("deleting iron2");
             I.destroy();
-            System.out.println("deleted iron");
             I.update(dt);
             iron_array.remove(n);
-            System.out.println("deleted iron from iron array");
             iron_count--;
         }catch (Exception e){
             System.out.println("delete iron got problem");
+            e.printStackTrace();
         }
     }
     public void updateGunPowder(float dt){
@@ -229,15 +233,10 @@ public class ResourceManager {
         game.playServices.BroadcastMessage("Generate:GunPowder:"+gp.getX()+":"+gp.getY());
     }
     public void delGunPowder(int n, float dt){
-
-        System.out.println("deleting GP");
         GunPowder gp = gunpowder_array.get(n);
         gp.destroy();
-        System.out.println("deleted GP");
         gp.update(dt);
-        System.out.println("removing GP");
         gunpowder_array.remove(n);
-        System.out.println("removed GP");
         gunpowder_count--;
 
     }
@@ -267,7 +266,8 @@ public class ResourceManager {
         game.playServices.BroadcastMessage("Generate:Oil:"+oil.getX()+":"+oil.getY());
     }
 
-    public String coordinatesR (){
+    //Sends coordinates of all currently spawned resources
+    public String coordinatesR(){
         String iron = "R";
         for (int i=0;i<iron_array.size();i++){
             iron += iron_array.get(i).getX() + " " + iron_array.get(i).getY() + ",";    // Ri- x1 coord : y1 coord , x2 coord : y2 coord , so on
@@ -283,7 +283,6 @@ public class ResourceManager {
 
         String resourceCoodinates = iron + gunpowder + oil;
 
-        System.out.println("Resources:"+resourceCoodinates);
         return resourceCoodinates;
     }
 

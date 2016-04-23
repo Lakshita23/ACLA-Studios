@@ -66,18 +66,10 @@ public class GameOver implements Screen {
         BUTTON_WIDTH = 120;
         BUTTON_HEIGHT = 20;
 
-        style1 = new Label.LabelStyle();
-        style1.font = new BitmapFont(Gdx.files.internal("fonts/spaceAge.fnt"));
-        style1.font.setColor(Color.BLUE);
-        style1.font.getData().setScale(0.3f, 0.3f);
-
-        style = new TextButtonStyle();  //can customize
-        style.font = new BitmapFont(Gdx.files.internal("fonts/spaceAge.fnt"));
-        style.font.setColor(Color.BLUE);
-
-        style.font.getData().setScale(0.2f, 0.2f);
-        style.up= new TextureRegionDrawable(new TextureRegion(new Texture("button/Button-notPressed.png")));
-        style.down= new TextureRegionDrawable(new TextureRegion(new Texture("button/Button-Pressed.png")));
+        //Label Style
+        style1 = AssetLoader.labelStyle;
+        //Button Style
+        style = AssetLoader.style;
 
         String myTeam;
         String winLose = "DRAW!";
@@ -102,6 +94,7 @@ public class GameOver implements Screen {
                 winLose = "DRAW, Nice match";
         }
 
+        //Initialising labels
         winLosetext = new Label(winLose, style1);
         playerScore = new Label("MY KILL SCORE: "+mykillScore, style1);
         if (myTeam.equals("RED")){
@@ -113,24 +106,22 @@ public class GameOver implements Screen {
             oppScore = new Label("ENEMY TEAM: RED: "+redScore, style1);
         }
 
-
+        //Initialising buttons
         mainBtn = new TextButton("Main Menu", style);
         leaderBtn = new TextButton("Leader Board", style);
 
-        System.out.println("constructor");
         show();
     }
 
     @Override
     public void show() {
         batch = new SpriteBatch();
-        background = new Texture("gameover3.png");
-
+        background = AssetLoader.gameOverbg;
         background.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
         sprite = new Sprite(background);
         sprite.setSize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 
-        System.out.println("add actors");
+        //Add Labels and Buttons to stage
         winLosetext.setSize(this.BUTTON_WIDTH * 2, this.BUTTON_HEIGHT);
         winLosetext.setPosition(SpaceConquest.V_WIDTH/2-this.BUTTON_WIDTH/2-10, 150);
         stage.addActor(winLosetext);
@@ -143,18 +134,14 @@ public class GameOver implements Screen {
         oppScore.setSize(this.BUTTON_WIDTH, this.BUTTON_HEIGHT);
         oppScore.setPosition(SpaceConquest.V_WIDTH/2-this.BUTTON_WIDTH/2-10, 60);
         stage.addActor(oppScore);
-//
-
-
-
         mainBtn.setSize(this.BUTTON_WIDTH, this.BUTTON_HEIGHT);
         mainBtn.setPosition(60, 20);
         stage.addActor(mainBtn);
-
         leaderBtn.setSize(this.BUTTON_WIDTH, this.BUTTON_HEIGHT);
         leaderBtn.setPosition(SpaceConquest.V_WIDTH-this.BUTTON_WIDTH-60, 20);
         stage.addActor(leaderBtn);
 
+        //Creating button click actions
         mainBtn.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
@@ -172,7 +159,6 @@ public class GameOver implements Screen {
                 gsm.set(new LeadersBoardScreen(game, gsm));
             }
         });
-
 
         Gdx.input.setInputProcessor(stage);
     }

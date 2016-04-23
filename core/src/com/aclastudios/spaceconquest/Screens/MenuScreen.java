@@ -5,20 +5,15 @@ import com.aclastudios.spaceconquest.SpaceConquest;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.audio.Music;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
-import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle;
@@ -47,23 +42,22 @@ public class MenuScreen implements Screen {
         this.game = game;
         viewport = new FitViewport(SpaceConquest.V_WIDTH, SpaceConquest.V_HEIGHT, new OrthographicCamera());
         stage = new Stage(viewport, (game).batch);
+        //Initialising assets
+        AssetLoader.loadStyles();
+        AssetLoader.loadbackgrounds();
 
         BUTTON_WIDTH = 120;
         BUTTON_HEIGHT = 20;
 
-        style = new TextButtonStyle();  //can customize
-        style.font = new BitmapFont(Gdx.files.internal("fonts/spaceAge.fnt"));
-        style.font.setColor(Color.BLUE);
-        style.font.getData().setScale(0.2f, 0.2f);
-        style.up= new TextureRegionDrawable(new TextureRegion(new Texture("button/Button-notPressed.png")));
-        style.down= new TextureRegionDrawable(new TextureRegion(new Texture("button/Button-Pressed.png")));
+        //Button style
+        style = AssetLoader.style;
 
         if (GameOver.gameoverMusic!=null){
             GameOver.gameoverMusic.stop();
             GameOver.gameoverMusic.dispose();
         }
 
-        // adding the music
+        //Adding the music
         if (menuMusic==null) {
             menuMusic = Gdx.audio.newMusic(Gdx.files.internal("menuMusic/!in-game.mp3"));
         }
@@ -72,11 +66,12 @@ public class MenuScreen implements Screen {
             menuMusic.setLooping(false);
             menuMusic.play();
         }
+
+        //Initialising Buttons- Text and Style
         play = new TextButton("START GAME",style);
         leaderboard = new TextButton("LEADER BOARD", style);
         instructions = new TextButton("HOW TO PLAY", style);
 
-        System.out.println("constructor");
         show();
     }
 
@@ -84,19 +79,15 @@ public class MenuScreen implements Screen {
     public void show() {
         // The elements are displayed in the order you add them.
         // The first appear on top, the last at the bottom.
-//        if (AssetLoader.gameMusic != null) {
-//            AssetLoader.gameMusic.stop();
-//            AssetLoader.disposeSFX();
-//        }
-        //AssetLoader.menuMusic.play();
 
+        //Creating new sprite for menu screen
         batch = new SpriteBatch();
-        background = new Texture("screens/Screen.png");
-
+        background = AssetLoader.background;
         background.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
         sprite = new Sprite(background);
         sprite.setSize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 
+        //Adding buttons to stage
         play.setSize(this.BUTTON_WIDTH / 3 * 2, this.BUTTON_HEIGHT);
         play.setPosition(30, 30);
         stage.addActor(play);
@@ -109,14 +100,13 @@ public class MenuScreen implements Screen {
         instructions.setPosition(292, 30);
         stage.addActor(instructions);
 
-        System.out.println("play");
+        //Creating button click actions
         play.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                gsm.set(new playersSelectScreen(game, gsm));
+                gsm.set(new ModeSelectScreen(game, gsm));
             }
         });
-
         leaderboard.addListener(new ClickListener() {
               @Override
             public void clicked(InputEvent event, float x, float y) {
@@ -124,17 +114,13 @@ public class MenuScreen implements Screen {
                   gsm.set(new LeadersBoardScreen(game, gsm));
             }
         });
-
-
         instructions.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-               // AssetLoader.clickSound.play(AssetLoader.VOLUME);
                 AssetLoader.loadTutorialScreen();
                 gsm.set(new TutorialScreen(game, gsm));
             }
         });
-
 
         Gdx.input.setInputProcessor(stage);
     }

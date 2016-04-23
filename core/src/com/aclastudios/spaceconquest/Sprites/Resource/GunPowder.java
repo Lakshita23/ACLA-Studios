@@ -7,11 +7,10 @@ import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.CircleShape;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 
-/**
- * Created by Lakshita on 3/24/2016.
- */
+//Gunpowder resource
 public class GunPowder extends Resources {
 
+    //Initialise resource texture from atlas
     public GunPowder(PlayScreen screen, float x, float y) {
         super(screen,"gunpowder_ore", x, y);
     }
@@ -27,12 +26,12 @@ public class GunPowder extends Resources {
         CircleShape shape = new CircleShape();
         shape.setRadius(8/ SpaceConquest.PPM);
 
-        //Collision Bit
-        fdef.filter.categoryBits = SpaceConquest.GUNPOWDER_BIT; //what category is this fixture
-        fdef.filter.maskBits = SpaceConquest.OBSTACLE_BIT
+        //Collision Bits
+        fdef.filter.categoryBits = SpaceConquest.GUNPOWDER_BIT; //Fixture Category
+        fdef.filter.maskBits = SpaceConquest.OBSTACLE_BIT       //Collidable objects fixtures
                 |SpaceConquest.MAIN_CHARACTER_BIT
                 |SpaceConquest.CHARACTER_BIT
-                |SpaceConquest.OBJECTIVE_BIT; //What can the character collide with?
+                |SpaceConquest.OBJECTIVE_BIT;
 
 
         //Body
